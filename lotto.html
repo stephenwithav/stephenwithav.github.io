@@ -76,6 +76,7 @@ function setup() {
     YUI().use('node', function(Y) {
 	if (loadNumbers()) {
 	    // add inputs
+	    console.log('loadNumbers success!');
 	    lottos.forEach(function(el) {
 		var idx = lottos.indexOf(el), info = lotto_info[el];
 
