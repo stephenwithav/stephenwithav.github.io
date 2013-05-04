@@ -71,6 +71,39 @@ function removeInput(id) {
     }
 }
 
+function saveNumbers() {
+    var val;
+
+    lottos.forEach(function(el) {
+	var idx = lottos.indexOf(el);
+	savedNums[idx] = new Array();
+	
+	YUI().use('node', 'lang', function(Y) {
+	    Y.all('#'+el+'nums .nums').each(function(n) {
+		savedNums[idx].push( Y.Lang.trim( n.get('value').replace(/\n/g, '/') ) );
+	    });
+
+	    create_cookie(el, savedNums[idx]);
+	});
+    });
+
+    switch_panes();
+    checkNumbers();
+}
+
+function loadNumbers() {
+    YUI().use('cookie', function(Y) {
+	lottos.forEach(function(el) {
+	    var str = Y.Cookie.get(el);
+	    if (str) {
+		savedNums[lottos.indexOf(el)] = str.split('&');
+	    }
+	});
+    });
+
+    return (document.cookie!='');
+}
+
 function setup() {
     // load saved numbers, if available
     YUI().use('node', function(Y) {
@@ -104,39 +137,6 @@ function setup() {
 	    switch_panes();
 	}
     });
-}
-
-function saveNumbers() {
-    var val;
-
-    lottos.forEach(function(el) {
-	var idx = lottos.indexOf(el);
-	savedNums[idx] = new Array();
-	
-	YUI().use('node', 'lang', function(Y) {
-	    Y.all('#'+el+'nums .nums').each(function(n) {
-		savedNums[idx].push( Y.Lang.trim( n.get('value').replace(/\n/g, '/') ) );
-	    });
-
-	    create_cookie(el, savedNums[idx]);
-	});
-    });
-
-    switch_panes();
-    checkNumbers();
-}
-
-function loadNumbers() {
-    YUI().use('cookie', function(Y) {
-	lottos.forEach(function(el) {
-	    var str = Y.Cookie.get(el);
-	    if (str) {
-		savedNums[lottos.indexOf(el)] = str.split('&');
-	    }
-	});
-    });
-
-    return (savedNums.some(function(a){return a.length!==undefined;}));
 }
 
 function check_lotto(lotto, info, winners) {
