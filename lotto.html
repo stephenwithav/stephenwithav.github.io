@@ -113,7 +113,7 @@ function setup() {
 	    lottos.forEach(function(el) {
 		var idx = lottos.indexOf(el), info = lotto_info[el];
 
-		while (savedNums[idx] === null) { idx = idx; }
+		while (savedNums[idx] === undefined) { idx = idx; }
 
 		if (savedNums[idx].length && (savedNums[idx].length > 0)) {
 		    savedNums[idx].forEach(function(card) {
