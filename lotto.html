@@ -126,11 +126,14 @@ function saveNumbers() {
 
 function loadNumbers() {
     var str = '';
-    lottos.forEach(function(el) {
-	str = read_cookie(el);
-	if (str) {
-	    savedNums[lottos.indexOf(el)] = str.split('&');
-	}
+
+    YUI().use('cookie', function(Y) {
+	lottos.forEach(function(el) {
+	    str = Y.Cookie.get(el);
+	    if (str) {
+		savedNums[lottos.indexOf(el)] = str.split('&');
+	    }
+	});
     });
 
     return (str) ? true : false;
