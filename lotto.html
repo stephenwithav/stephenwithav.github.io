@@ -93,11 +93,13 @@ function saveNumbers() {
 
 function loadNumbers() {
     YUI().use('cookie', function(Y) {
-	lottos.forEach(function(el) {
+	savedNums = lottos.map(function(el) {
 	    var str = Y.Cookie.get(el);
 	    if (str) {
-		savedNums[lottos.indexOf(el)] = str.split('&');
+		return str.split('&');
 	    }
+
+	    return [];
 	});
     });
 
