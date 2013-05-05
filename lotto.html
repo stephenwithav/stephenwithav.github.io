@@ -114,6 +114,8 @@ function setup() {
 	    console.log('loadNumbers success!');
 	    lottos.forEach(function(el) {
 		var idx = lottos.indexOf(el), info = lotto_info[el];
+		console.log(idx);
+		console.log(savedNums[idx]);
 
 		if (savedNums[idx].length && (savedNums[idx].length > 0)) {
 		    savedNums[idx].forEach(function(card) {
