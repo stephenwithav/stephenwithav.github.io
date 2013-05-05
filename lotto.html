@@ -16,21 +16,21 @@ var lotto_info = {
 		 xpath: "//table[@class='date']/tr/td[contains(@style, 'right')]/strong",
 	         input: "<input type='text' class='nums' />",
 		 bonus: 'Powerball!',
-	       default: 1 },
+	       count: 1 },
     megamillions: { url: "http://www.sceducationlottery.com/games2/3winningnumbers_megamillions.asp",
 		    xpath: "//table[@class='date']/tr/td[contains(@style,'right')]/strong",
 		    input: "<input type='text' class='nums' />",
 		    bonus: 'Megaball!',
-		  default: 1,
+		  count: 1,
 		    post: function(s) { return s.replace("x3", ''); } },
     palmetto5: { url: "http://sceducationlottery.com/games2/3winningnumbers_cash5.asp",
 		 xpath: "//table/tr/td[@colspan='7' and contains(@style, 'center')]/strong",
 	         input: "<input type='text' class='nums' />",
-	       default: 1 },
+	       count: 1 },
     cash6: { url:"http://sceducationlottery.com/games2/3winningnumbers_cash6.asp",
 	     xpath: "//table[@class='date']/tr/td[contains(@style, 'right')]/strong",
 	     input: "<textarea rows='3' cols='20' class='nums' />",
-	   default: 1,
+	   count: 1,
 	     pre: function(el) { return el.replace(/\//g, "\n"); } }
 };
 
@@ -144,7 +144,7 @@ function setup() {
 	    console.log('loadNumbers fail!');
 	    lottos.forEach(function(el) {
 		var info = lotto_info[el];
-		for (var i=0; i<info['default']; i++) {
+		for (var i=0; i<info['count']; i++) {
 		    Y.Node.create(info['input']).appendTo('#'+el+'nums');
 		}
 	    });
