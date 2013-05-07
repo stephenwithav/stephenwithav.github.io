@@ -83,7 +83,7 @@ function saveNumbers() {
 		savedNums[idx].push( Y.Lang.trim( n.get('value').replace(/\n/g, '/') ) );
 	    });
 
-	    create_cookie(el, savedNums[idx]);
+	    create_cookie(el, savedNums[idx].join('&'));
 	});
     });
 
@@ -106,7 +106,7 @@ function loadNumbers() {
     savedNums = lottos.map(function(el) {
 	var str = readCookie(el);
 	if (str) {
-	    return str.split('&');
+	    return str.split(',');
 	}
 
 	return [];
