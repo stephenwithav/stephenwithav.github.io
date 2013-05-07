@@ -106,7 +106,7 @@ function loadNumbers() {
     savedNums = lottos.map(function(el) {
 	var str = readCookie(el);
 	if (str) {
-	    return str.split(',');
+	    return str.split('&');
 	}
 
 	return [];
