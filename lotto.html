@@ -158,8 +158,9 @@ function check_lotto(lotto, info, winners) {
     return savedNums[lottos.indexOf(lotto)].map(function(card) {
 	var cardNums = card.match(/\d+/g);
 	var toMatch = (info.bonus) ? cardNums.slice(0, cardNums.length - 2) : cardNums;
+	var woBonus = (info.bonus) ? winners.slice(0, winners.length - 2) : winners;
 
-	return [toMatch.filter(function(n){return winners.indexOf(n) > -1;}), cardNums[cardNums.length-1] === winners[winners.length-1]];
+	return [toMatch.filter(function(n){return woBonus.indexOf(n) > -1;}), cardNums[cardNums.length-1] === winners[winners.length-1]];
     });
 }
 
