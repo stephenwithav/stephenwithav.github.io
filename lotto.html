@@ -181,7 +181,7 @@ function checkNumbers() {
 		      var msgs = matches.map(function(ar, idx) { return ['Card ', idx+1, ': ', ar[0].length, ' numbers [', ar[0], ']'].join('') + ((info.bonus && (ar[1])) ? ' + <font style="color: red;">' + info.bonus + '</font>' : ''); });
 		      msgs = msgs.filter(function(s) { return s.indexOf('0 numbers') === -1; });
 
-		      Y.one('#'+el+'w div').setHTML( Y.Node.create(msgs.join('<br />')) );
+		      Y.one('#'+el+'w div').setHTML( Y.Node.create((msgs.length > 0) ? msgs.join('<br />') : 'None') );
 		      
 		  }, {});
 	});
