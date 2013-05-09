@@ -178,7 +178,7 @@ function checkNumbers() {
 		      Y.one('#'+el).setHTML('<b>'+res+'</b>');
 		      var matches = check_lotto(el, info, res.match(/\d+/g));
 		      console.log(matches);
-		      var msgs = matches.map(function(ar, idx) { return ['Card ', idx+1, ': ', ar[0].length, ' numbers [', ar[0], ']'].join('') + ((info.bonus && (ar[1])) ? ' + ' + info.bonus : ''); });
+		      var msgs = matches.map(function(ar, idx) { return ['Card ', idx+1, ': ', ar[0].length, ' numbers [', ar[0], ']'].join('') + ((info.bonus && (ar[1])) ? ' + <font style="color: red;">' + info.bonus + '</font> : ''); });
 		      console.log(msgs);
 
 		      Y.one('#'+el+'w div').setHTML( Y.Node.create(msgs.join('<br />')) );
