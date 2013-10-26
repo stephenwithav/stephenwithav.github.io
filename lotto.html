@@ -10,7 +10,7 @@
 </style>
 <script src="http://yui.yahooapis.com/3.10.0/build/yui/yui-min.js"></script>
 <script type="text/javascript">
-var lottos = ['powerball', 'megamillions', 'palmetto5', 'cash6'];
+var lottos = ['powerball', 'megamillions', 'palmetto5'];
 var lotto_info = {
     powerball: { url: "http://sceducationlottery.com/games2/3winningnumbers_powerball.asp",
 		 xpath: "//table[@class='date']/tr/td[contains(@style, 'right')]/strong",
@@ -27,11 +27,6 @@ var lotto_info = {
 		 xpath: "//table/tr/td[@colspan='7' and contains(@style, 'center')]/strong",
 	         input: "<input type='text' class='nums' />",
 	       count: 1 },
-    cash6: { url:"http://sceducationlottery.com/games2/3winningnumbers_cash6.asp",
-	     xpath: "//table[@class='date']/tr/td[contains(@style, 'right')]/strong",
-	     input: "<textarea rows='3' cols='20' class='nums' />",
-	   count: 1,
-	     pre: function(el) { return el.replace(/\//g, "\n"); } }
 };
 
 var savedNums = new Array();
