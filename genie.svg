@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1920px"
+	 height="1080px">
+<defs>
+  <pattern id="bg" x="0" y="0" width="1920" height="1080" patternUnits="userSpaceOnUse">
+    <image x="0" y="0" width="1920" height="1080" xlink:href="./genie.jpg" />
+  </pattern>
+</defs>
+<rect x="0" y="0" fill="url(#bg)" width="1920" height="1080" />
+<text text-anchor="middle" width="1920" x="960" y="900" fill="#ffffff">I can't believe it. I'm <tspan fill="#f00">losing</tspan> to a rug!</text>
+</svg>
