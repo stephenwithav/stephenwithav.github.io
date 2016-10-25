@@ -173,6 +173,7 @@ function checkNumbers() {
 	    
 	    Y.YQL('SELECT content, span.content FROM html WHERE url = "' + info.url + '" AND xpath = "' + info.xpath + '"',
 		  function(r) {
+		    console.log(r);
 		      var res = r.query.results.strong[0]; res = ((typeof res) == "string") ? res : res.content + res.span;
 		      if (info.post) { res = (info.post)(res); }
 		      console.log(res.match(/\d+/g));
