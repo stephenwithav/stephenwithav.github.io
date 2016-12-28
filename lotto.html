@@ -170,10 +170,11 @@ function checkNumbers() {
     YUI().use('node', 'yql', function(Y) {
 	lottos.forEach(function(el) {
 	    var info = lotto_info[el], winners = new Array();
-	    
-	    Y.YQL('SELECT content, span.content FROM html WHERE url = "' + info.url + '" AND xpath = "' + info.xpath + '"',
+	    var query = 'SELECT content, span.content FROM html WHERE url = "' + info.url + '" AND xpath = "' + info.xpath + '"';
+		
+	    Y.YQL(query,
 		  function(r) {
-		    console.log(r);
+		    console.log(r.query.diagnostics);
 		      var res = r.query.results.strong[0]; res = ((typeof res) == "string") ? res : res.content + res.span;
 		      if (info.post) { res = (info.post)(res); }
 		      console.log(res.match(/\d+/g));
@@ -185,7 +186,7 @@ function checkNumbers() {
 
 		      Y.one('#'+el+'w div').setHTML( Y.Node.create((msgs.length > 0) ? msgs.join('<br />') : 'None') );
 		      
-		  }, {});
+		  }, {'diagnostics': true});
 	});
     });
     
