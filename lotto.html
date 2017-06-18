@@ -186,7 +186,7 @@ function checkNumbers() {
 
 		      Y.one('#'+el+'w div').setHTML( Y.Node.create((msgs.length > 0) ? msgs.join('<br />') : 'None') );
 		      
-		  }, {'diagnostics': true});
+		  }, {'diagnostics': true, 'env':'http://datatables.org/alltables.env'});
 	});
     });
     
