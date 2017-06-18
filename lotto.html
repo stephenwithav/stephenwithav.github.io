@@ -175,8 +175,8 @@ function checkNumbers() {
 	    Y.YQL(query,
 		  function(r) {
 		    console.log(r.query.diagnostics);
-		    console.log(r.query.results);
-		      var res = r.query.results.result.strong[0]; res = ((typeof res) == "string") ? res : res.content + res.span;
+		    console.log(r.query.results.result);
+		      var res = r.query.results.result; res = ((typeof res) == "string") ? res.substring(0, res.indexOf('/strong')) : res.content + res.span;
 		      if (info.post) { res = (info.post)(res); }
 		      console.log(res.match(/\d+/g));
 		      Y.one('#'+el).setHTML('<b>'+res+'</b>'); var nums = res.match(/x\d|\d+/g); nums = nums.filter(function(pnum) {return parseInt(pnum)==pnum;});
