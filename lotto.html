@@ -170,7 +170,7 @@ function checkNumbers() {
     YUI().use('node', 'yql', function(Y) {
 	lottos.forEach(function(el) {
 	    var info = lotto_info[el], winners = new Array();
-	    var query = 'SELECT content, span.content FROM html WHERE url = "' + info.url + '" AND xpath = "' + info.xpath + '"';
+	    var query = 'SELECT content, span.content FROM htmlstring WHERE url = "' + info.url + '" AND xpath = "' + info.xpath + '"';
 		
 	    Y.YQL(query,
 		  function(r) {
