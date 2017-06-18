@@ -176,7 +176,7 @@ function checkNumbers() {
 		  function(r) {
 		    console.log(r.query.diagnostics);
 		    console.log(r.query.results.result);
-		      var res = r.query.results.result; res = ((typeof res) == "string") ? res.substring(0, res.indexOf('/strong')-1) : res.content + res.span;
+		      var res = r.query.results.result; res = ((typeof res) == "string") ? res.substring(0, res.indexOf('</strong')-1) : res.content + res.span;
 		    console.log(res);
 		      if (info.post) { res = (info.post)(res); }
 		      console.log(res.match(/\d+/g));
