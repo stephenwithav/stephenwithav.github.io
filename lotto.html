@@ -22,7 +22,7 @@ var lotto_info = {
 		    input: "<input type='text' class='nums' />",
 		    bonus: "Megaball!",
 		  count: 1,
-		    post: function(s) { return s.replace(/^[^x]+x\d/, ''); } },
+//		    post: function(s) { return s.replace(/^[^x]+x\d/, ''); } },
     palmetto5: { url: "http://sceducationlottery.com/games2/3winningnumbers_cash5.asp",
 		 xpath: "//table//tr/td[@colspan='7' and contains(@style, 'center')]/strong",
 	         input: "<input type='text' class='nums' />",
@@ -179,7 +179,7 @@ function checkNumbers() {
 		      var res = r.query.results.result; res = ((typeof res) == "string") ? res.substring(0, res.indexOf('</strong')-1) : res.content + res.span;
 		    console.log(res);
 		      if (info.post) { res = (info.post)(res); }
-		      console.log(res.match(/\d+/g));
+		      console.log(res, res.match(/\d+/g));
 		      Y.one('#'+el).setHTML('<b>'+res+'</b>'); var nums = res.match(/x\d|\d+/g); nums = nums.filter(function(pnum) {return parseInt(pnum)==pnum;});
 		      var matches = check_lotto(el, info, nums);
 		      console.log('[matches] '+matches);
