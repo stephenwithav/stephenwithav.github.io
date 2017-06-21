@@ -1,0 +1,9 @@
+{
+"powerball": {"bonus": true, "url":"http://sceducationlottery.com/games2/3winningnumbers_powerball.asp", "xpath": "table.date tr td:nth-child(2)", "multiplier": true},
+
+"megamillions": {"bonus": true, "url":"http://www.sceducationlottery.com/games2/3winningnumbers_megamillions.asp", "xpath": "table.date tr td:nth-child(2)", "multiplier": true},
+
+"cash5": {"url":"http://sceducationlottery.com/games2/3winningnumbers_cash5.asp", "xpath": "table tr:nth-child(2) td[colspan='7']", "multiplier": true},
+
+"lucky-for-life": {"bonus": true, "url":"http://www.sceducationlottery.com/games2/3winningnumbers_luckyforlife.asp", "xpath": "table.date tr td:nth-child(2)"}
+}
