@@ -18,7 +18,7 @@ function combinate(obj) {
 
 function generateCombos() {
   let textareaValue = document.getElementById(`colors`).value;
-  let colors = textareaValue.split("\n").map(el => el.trim());
+  let colors = textareaValue.trim().split("\n").map(el => el.trim());
   let colorCombos = combinate({
     background: colors,
     color: colors,
@@ -36,9 +36,12 @@ function generateCombos() {
     innerDiv.style.background = colors.background;
     innerDiv.style.color = colors.color;
     innerDiv.style.marginBottom = '0.25em';
-    innerDiv.onclick = () => navigator.clipboard.writeText(`background: ${colors.background};
+    innerDiv.onclick = () => {
+      innerDiv.classList.toggle('selected');
+      navigator.clipboard.writeText(`background: ${colors.background};
 color: ${colors.color};
 accent: ${colors.accent};`);
+    };
     innerDiv.innerHTML = `
 <h4 class="p-3">Header!</h4>
 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
@@ -50,4 +53,30 @@ accent: ${colors.accent};`);
   div.appendChild(rowDiv);
   let oldPreviews = document.getElementById(`previews`).firstChild;
   document.getElementById(`previews`).replaceChild(div, oldPreviews);
+}
+
+function filterByChosen() {
+  let chosen = Array.from(document.getElementsByClassName('selected'));
+  let chosenColors = {};
+
+  chosen.forEach(div => {
+    chosenColors[div.style.background] = null;
+    chosenColors[div.style.color] = null;
+    chosenColors[div.getElementsByTagName('span')[0].style.backgroundColor] = null;
+  });
+
+  document.getElementById('colors').value = Object.keys(chosenColors).join("\n");
+  generateCombos();
+}
+
+function splitIntoLinesOnPaste() {
+  let textareaValue = document.getElementById(`colors`).value;
+  console.log(textareaValue);
+  let colors = textareaValue.split(",").map(col => col.trim()).map(
+    col => /^#[0-9A-F]{6}$/i.test(col) ? col :
+      /^[0-9A-F]{6}$/i.test(col) ? '#' + col :
+        col
+  );
+  document.getElementById(`colors`).value = colors.join("\n");
+
 }

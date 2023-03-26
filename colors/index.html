@@ -12,6 +12,10 @@
          body {
              background: #666;
          }
+
+         .selected {
+             border: solid orange;
+         }
         </style>
         <script type="text/javascript" src="./index.js"> </script>
 
@@ -20,7 +24,7 @@
         <div class="container p-3">
             <div class="row justify-content-center">
                 <div class="text-center">
-                    <textarea name="colors" id="colors" rows="10" cols="19" tabindex="1">#012a4a
+                    <textarea name="colors" id="colors" rows="10" cols="19" tabindex="1" onpaste="setTimeout(splitIntoLinesOnPaste, 100);">#012a4a
 #013a63
 #01497c
 #014f86
@@ -33,7 +37,9 @@
 black
 white</textarea>
                     <br/>
-                    <input type="submit" onclick="generateCombos();" value="Generate"/>
+                    <input class="mb-3" type="submit" onclick="generateCombos();" value="Generate"/>
+                    <br/>
+                    <input type="submit" onclick="filterByChosen();" value="Filter"/>
                 </div>
             </div>
         </div>
