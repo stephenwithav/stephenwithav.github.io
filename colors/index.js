@@ -42,7 +42,7 @@ accent: ${colors.accent};`);
     innerDiv.innerHTML = `
 <h4 class="p-3">Header!</h4>
 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-<span style="background: ${colors.accent};">Accent</span>
+<span class="btn" style="background: ${colors.accent};">Accent</span>
 `;
     rowDiv.appendChild(innerDiv);
   });
