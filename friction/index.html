@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <title>Think.</title>
+        <script>
+         const redirect = (url) => function() {location.replace(url);}
+         const urlSearchParams = new URLSearchParams(window.location.search);
+         const to = urlSearchParams.get("to");
+         const delay = urlSearchParams.get('delay') || 15000;
+
+         setTimeout(redirect(to), delay);
+        </script>
+        <style type="text/css" media="screen">
+         .centered {
+             text-align: center;
+             margin: auto auto;
+             font-size: 12em;
+         }
+        </style>
+
+    </head>
+    <body>
+        <div class="centered">
+            Friction.<br/>
+            Complete your work.
+        </div>
+    </body>
+</html>
