@@ -77,17 +77,16 @@
                 labelContainer.childNodes[i].innerHTML = classPrediction;
             }
 
-            if ((indexMax == START_RECORDING) && (!currentlyRecording)) {
+            if ((indexMax == START_RECORDING) && (!currentlyRecording) && (scoreMax > 0.7)) {
                 audioRecorder.start();
                 currentlyRecording = true;
                 console.log('start');
             }
 
-            if ((indexMax == STOP_RECORDING) && (currentlyRecording)) {
+            if ((indexMax == STOP_RECORDING) && (currentlyRecording) && (scoreMax > 0.7)) {
                 audioRecorder.stop();
                 currentlyRecording = false;
             }
-
         }, {
             includeSpectrogram: true, // in case listen should return result.spectrogram
             probabilityThreshold: 0.75,
