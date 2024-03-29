@@ -323,7 +323,7 @@ function showListings() {
       window.open(home.SourceURL, "_blank");
     };
     innerDiv.innerHTML = `
-<h6 class="p-3">${home.Price} ${home.Beds} beds / ${home.Baths} bath</h6>
+<h6 class="p-3">${home.Price} ${home.Beds} / ${home.Baths}</h6>
 <p>${home.PropertyDescription}</p>
 <p>Community: ${home.Community}<br/>Built: ${home.Age}<br/>SqFt: ${home.Sqft} </p>
 `;
