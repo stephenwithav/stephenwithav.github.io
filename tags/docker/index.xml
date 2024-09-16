@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Docker on Steven&#39;s Thoughts</title>
+    <link>https://example.org/tags/docker/</link>
+    <description>Recent content in Docker on Steven&#39;s Thoughts</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© Steven Edwards</copyright>
+    <lastBuildDate>Mon, 16 Sep 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://example.org/tags/docker/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Docker and Containers and Minikube! Oh My!</title>
+      <link>https://example.org/bootstrapping-microservices/docker-and-containers-and-minikube-oh-my/</link>
+      <pubDate>Mon, 16 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://example.org/bootstrapping-microservices/docker-and-containers-and-minikube-oh-my/</guid>
+      <description>&lt;p&gt;&#xA;We ended last week with a web server that can &lt;a href=&#34;https://example.org/bootstrapping-microservices/in-the-beginning/&#34;&gt;stream our sample video&lt;/a&gt; to the web browser.  This week we focus on &lt;strong&gt;&lt;strong&gt;Chapter 3: Publishing Your First Microservice&lt;/strong&gt;&lt;/strong&gt; from &lt;a href=&#34;https://bootstrapping-microservices.com/&#34;&gt;Bootstrapping Microservices&lt;/a&gt;, but with one major tweak in &lt;a href=&#34;#outline-container-headline-3&#34;&gt;Section 3&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;p&gt;&#xA;Before we get there, we need to know a tiny bit about &lt;a href=&#34;https://www.docker.com/&#34;&gt;Docker&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;div id=&#34;outline-container-headline-1&#34; class=&#34;outline-3&#34;&gt;&#xA;&lt;h3 id=&#34;headline-1&#34;&gt;&#xA;Section 1: A Brief Introduction to Docker&#xA;&lt;/h3&gt;&#xA;&lt;div id=&#34;outline-text-headline-1&#34; class=&#34;outline-text-3&#34;&gt;&#xA;&lt;p&gt;Developers frequently dealt with inconsistent development and production environments, with team members often having difficulty replicating production errors on their own machines.  This was a huge drain on productivity.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[
+<p>
+We ended last week with a web server that can <a href="/bootstrapping-microservices/in-the-beginning/">stream our sample video</a> to the web browser.  This week we focus on <strong><strong>Chapter 3: Publishing Your First Microservice</strong></strong> from <a href="https://bootstrapping-microservices.com/">Bootstrapping Microservices</a>, but with one major tweak in <a href="#outline-container-headline-3">Section 3</a>.</p>
+<p>
+Before we get there, we need to know a tiny bit about <a href="https://www.docker.com/">Docker</a>.</p>
+<div id="outline-container-headline-1" class="outline-3">
+<h3 id="headline-1">
+Section 1: A Brief Introduction to Docker
+</h3>
+<div id="outline-text-headline-1" class="outline-text-3">
+<p>Developers frequently dealt with inconsistent development and production environments, with team members often having difficulty replicating production errors on their own machines.  This was a huge drain on productivity.</p>
+<p>
+Docker finally enabled a write-once, deploy anywhere workflow that enables consistent deployment of <code class="verbatim">images</code> to any machine imaginable.  <code class="verbatim">Containers</code> can be created consistently from these images and run under almost any imaginable environment.</p>
+<p>
+Docker images are created with <code class="verbatim">Dockerfiles</code>, a set of instructions for creating an <code class="verbatim">image</code>.</p>
+<p>
+Here&#39;s a simple example:</p>
+<div class="src src-dockerfile">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-dockerfile" data-lang="dockerfile"><span style="display:flex;"><span><span style="color:#66d9ef">FROM</span><span style="color:#e6db74"> golang:1.23</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ADD</span> . /src<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">WORKDIR</span><span style="color:#e6db74"> /src</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">RUN</span> go build -o main .<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENTRYPOINT</span> [<span style="color:#e6db74">&#34;/main&#34;</span>]</span></span></code></pre></div>
+</div>
+<p>
+Everything prior to the <code class="verbatim">ENTRYPOINT</code> line is stored in a separate layer of the image.</p>
+<p>
+Now let&#39;s move on to the next step: Docker.</p>
+</div>
+</div>
+<div id="outline-container-headline-2" class="outline-3">
+<h3 id="headline-2">
+Section 2: Enough theory! Let&#39;s practice Docker! (<a href="https://github.com/Bootstrapping-Microservices-in-Go/chapter-03/blob/main/example-01/Dockerfile">source</a>)
+</h3>
+<div id="outline-text-headline-2" class="outline-text-3">
+<p>Our <code class="verbatim">Dockerfile</code> will be slightly more complicated than those in the book, but only so we can minimize the size of our final Docker image.</p>
+<div class="src src-dockerfile">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-dockerfile" data-lang="dockerfile"><span style="display:flex;"><span><span style="color:#75715e"># builder is our temporary image.</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">FROM</span><span style="color:#e6db74"> golang:1.23 AS builder</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># ADD allows us to place every file in the</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># current directory to the /src directory of</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># the golang image.</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ADD</span> . /src<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># WORKDIR is the directory where our RUN and CMD</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># instructions execute in.</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">WORKDIR</span><span style="color:#e6db74"> /src</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Disabling CGO_ENABLED creates a larger executable,</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># but strengthens our security by eliminating all</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># other Linux executables.</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENV</span> CGO_ENABLED<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># RUN executes the given command in WORKDIR.</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># Here, we build the video-streaming binary.</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">RUN</span> go build -o main .<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># SCRATCH is an empty image: size 0 bytes.  It&#39;s extremely</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># useful for improving your security.</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">FROM</span><span style="color:#e6db74"> scratch</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># WORKDIR says make the root directory our working directory.</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">WORKDIR</span><span style="color:#e6db74"> /</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># COPY allows us to copy files from either our host</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># computer or, with the --from option, an earlier build stage,</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># to our final image.  We&#39;ll first copy the executable main,</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># from the builder stage, then we&#39;ll copy the /src/videos directory.</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">COPY</span> --from<span style="color:#f92672">=</span>builder /src/main /<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">COPY</span> --from<span style="color:#f92672">=</span>builder /src/videos /videos<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># ENTRYPOINT specifies the command that runs when this</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#75715e"># container starts,</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">ENTRYPOINT</span> [<span style="color:#e6db74">&#34;/main&#34;</span>]</span></span></code></pre></div>
+</div>
+<p>
+With our <code class="verbatim">Dockerfile</code> defined, let&#39;s now switch to the <code class="verbatim">chapter-03</code> directory and build our first image:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>$ docker build -t video-streaming .</span></span></code></pre></div>
+</div>
+<p>
+And finally, we can instantiate a container from our image with:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>$ docker run -p 3000:3000 -e PORT<span style="color:#f92672">=</span><span style="color:#ae81ff">3000</span> video-streaming</span></span></code></pre></div>
+</div>
+<p>
+We can even run a second instance of the container bound to another local port if we so choose:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>$ docker run -p 3001:3000 -e PORT<span style="color:#f92672">=</span><span style="color:#ae81ff">3000</span> video-streaming</span></span></code></pre></div>
+</div>
+<p>
+We don&#39;t need to at this point, but this can be helpful when comparing the functionality of separate versions of the same microservice.  (aka, regression tests.  More on that in future weeks.)</p>
+</div>
+</div>
+<div id="outline-container-headline-3" class="outline-3">
+<h3 id="headline-3">
+Section 3: Publishing our microservice
+</h3>
+<div id="outline-text-headline-3" class="outline-text-3">
+<p>This is where we deviate slightly from the book.  This series will use <a href="https://minikube.sigs.k8s.io/docs/start/?arch=%2Flinux%2Fx86-64%2Fstable%2Fbinary+download">minikube</a> as its Kubernetes platform instead of Azure, eliminating any risk of getting <em>&#34;accidentally&#34;</em> charged while learning Kubernetes.</p>
+<p>
+We won&#39;t be interacting with Kubernetes for three more weeks, but we&#39;ll demonstrate loading our images into the <code class="verbatim">minikube</code> container registry here since the book does.</p>
+<p>
+For Linux and Macs:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>$ minikube start
+</span></span><span style="display:flex;"><span>$ eval <span style="color:#66d9ef">$(</span>minikube docker-env<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>$ docker build -t video-streaming .
+</span></span><span style="display:flex;"><span>$ minikube stop</span></span></code></pre></div>
+</div>
+<p>
+For Powershell:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>PS&gt; minikube start
+</span></span><span style="display:flex;"><span>PS&gt; minikube -p minikube docker-env --shell powershell | Invoke-Expression
+</span></span><span style="display:flex;"><span>PS&gt; docker build -t video-streaming .
+</span></span><span style="display:flex;"><span>PS&gt; minikube stop</span></span></code></pre></div>
+</div>
+<p>
+…and finally, for the Windows command prompt:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>C:<span style="color:#ae81ff">\t</span>mp&gt; minikube start
+</span></span><span style="display:flex;"><span>C:<span style="color:#ae81ff">\t</span>mp&gt; @FOR /f <span style="color:#e6db74">&#34;tokens=*&#34;</span> %i IN <span style="color:#f92672">(</span><span style="color:#e6db74">&#39;minikube -p minikube docker-env --shell cmd&#39;</span><span style="color:#f92672">)</span> DO @%i
+</span></span><span style="display:flex;"><span>C:<span style="color:#ae81ff">\t</span>mp&gt; docker build -t video-streaming .
+</span></span><span style="display:flex;"><span>C:<span style="color:#ae81ff">\t</span>mp&gt; minikube stop</span></span></code></pre></div>
+</div>
+<p>
+Using <code class="verbatim">minikube</code> as our container registry is sufficient for now, as we&#39;ll primarily be using <code class="verbatim">docker compose</code> during development.</p>
+<p>
+Next week: <code class="verbatim">docker compose</code>, <code class="verbatim">MongoDB</code>, <code class="verbatim">S3</code>, <code class="verbatim">MinIO</code>, and the <code class="verbatim">video-storage</code> microservice.  Get excited!</p>
+</div>
+</div>
+]]></content:encoded>
+    </item>
+  </channel>
+</rss>
