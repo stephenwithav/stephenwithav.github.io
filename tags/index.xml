@@ -7,12 +7,12 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© Steven Edwards</copyright>
-    <lastBuildDate>Mon, 16 Sep 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 25 Sep 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://example.org/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Docker</title>
       <link>https://example.org/tags/docker/</link>
-      <pubDate>Mon, 16 Sep 2024 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 25 Sep 2024 00:00:00 +0000</pubDate>
       <guid>https://example.org/tags/docker/</guid>
       <description></description>
       <content:encoded><![CDATA[]]></content:encoded>
@@ -20,8 +20,32 @@
     <item>
       <title>Microservices</title>
       <link>https://example.org/tags/microservices/</link>
-      <pubDate>Mon, 16 Sep 2024 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 25 Sep 2024 00:00:00 +0000</pubDate>
       <guid>https://example.org/tags/microservices/</guid>
+      <description></description>
+      <content:encoded><![CDATA[]]></content:encoded>
+    </item>
+    <item>
+      <title>MinIO</title>
+      <link>https://example.org/tags/minio/</link>
+      <pubDate>Wed, 25 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://example.org/tags/minio/</guid>
+      <description></description>
+      <content:encoded><![CDATA[]]></content:encoded>
+    </item>
+    <item>
+      <title>MongoDB</title>
+      <link>https://example.org/tags/mongodb/</link>
+      <pubDate>Wed, 25 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://example.org/tags/mongodb/</guid>
+      <description></description>
+      <content:encoded><![CDATA[]]></content:encoded>
+    </item>
+    <item>
+      <title>S3</title>
+      <link>https://example.org/tags/s3/</link>
+      <pubDate>Wed, 25 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://example.org/tags/s3/</guid>
       <description></description>
       <content:encoded><![CDATA[]]></content:encoded>
     </item>
