@@ -3,39 +3,48 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://example.org/categories/bootstrapping/</loc>
-    <lastmod>2024-09-25T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-01T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://example.org/tags/air/</loc>
+    <lastmod>2024-10-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/bootstrapping-microservices/</loc>
-    <lastmod>2024-09-25T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/categories/</loc>
-    <lastmod>2024-09-25T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://example.org/bootstrapping-microservices/containers-are-to-microservice-what-atoms-are-to-the-universe/</loc>
-    <lastmod>2024-09-25T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/tags/docker/</loc>
-    <lastmod>2024-09-25T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/tags/microservices/</loc>
-    <lastmod>2024-09-25T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/categories/microservices/</loc>
+    <lastmod>2024-10-01T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://example.org/tags/mongodb/</loc>
+    <lastmod>2024-10-01T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://example.org/bootstrapping-microservices/air-for-live-dev-container-reloads-and-messaging-between-microservices/</loc>
+    <lastmod>2024-10-01T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://example.org/tags/rabbitmq/</loc>
+    <lastmod>2024-10-01T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://example.org/</loc>
+    <lastmod>2024-10-01T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://example.org/tags/</loc>
+    <lastmod>2024-10-01T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://example.org/bootstrapping-microservices/containers-are-to-microservice-what-atoms-are-to-the-universe/</loc>
     <lastmod>2024-09-25T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/tags/minio/</loc>
     <lastmod>2024-09-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://example.org/tags/mongodb/</loc>
-    <lastmod>2024-09-25T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://example.org/tags/s3/</loc>
-    <lastmod>2024-09-25T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://example.org/</loc>
-    <lastmod>2024-09-25T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://example.org/tags/</loc>
     <lastmod>2024-09-25T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/bootstrapping-microservices/docker-and-containers-and-minikube-oh-my/</loc>
