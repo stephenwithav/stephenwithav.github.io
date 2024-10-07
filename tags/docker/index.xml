@@ -7,8 +7,401 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© Steven Edwards</copyright>
-    <lastBuildDate>Tue, 01 Oct 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 07 Oct 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://example.org/tags/docker/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Minikube 101</title>
+      <link>https://example.org/bootstrapping-microservices/minikube-101/</link>
+      <pubDate>Mon, 07 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://example.org/bootstrapping-microservices/minikube-101/</guid>
+      <description>&lt;p&gt;&#xA;The moment has finally arrived!  We will learn a bit about Kubernetes and finally deploy our initial microservice from &lt;a href=&#34;https://example.org/bootstrapping-microservices/docker-and-containers-and-minikube-oh-my/&#34;&gt;three weeks ago&lt;/a&gt; to our Kubernetes distribution of choice: &lt;a href=&#34;https://minikube.sigs.k8s.io/docs/start/&#34;&gt;minikube&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;p&gt;&#xA;The good thing?  The basics of Kubernetes boil down to three new concepts: &lt;code class=&#34;verbatim&#34;&gt;Pods&lt;/code&gt;, &lt;code class=&#34;verbatim&#34;&gt;Deployments&lt;/code&gt;, and &lt;code class=&#34;verbatim&#34;&gt;Services&lt;/code&gt;.&lt;/p&gt;&#xA;&lt;div id=&#34;outline-container-headline-1&#34; class=&#34;outline-3&#34;&gt;&#xA;&lt;h3 id=&#34;headline-1&#34;&gt;&#xA;Terminology&#xA;&lt;/h3&gt;&#xA;&lt;div id=&#34;outline-text-headline-1&#34; class=&#34;outline-text-3&#34;&gt;&#xA;&lt;p&gt;&lt;code class=&#34;verbatim&#34;&gt;Pods&lt;/code&gt; allow multiple Docker containers to coexist within the same network space so they can communicate with each other over &lt;code class=&#34;verbatim&#34;&gt;localhost&lt;/code&gt;, almost as if they were services running on the same computer.  We will explore multi-container &lt;code class=&#34;verbatim&#34;&gt;Pods&lt;/code&gt; in a future series, but we&amp;#39;ll follow the lead of the &lt;a href=&#34;https://bootstrapping-microservices.com/&#34;&gt;Bootstrapping Microservices&lt;/a&gt; book and stick with single containers &lt;code class=&#34;verbatim&#34;&gt;Pods&lt;/code&gt; for now.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[
+<p>
+The moment has finally arrived!  We will learn a bit about Kubernetes and finally deploy our initial microservice from <a href="/bootstrapping-microservices/docker-and-containers-and-minikube-oh-my/">three weeks ago</a> to our Kubernetes distribution of choice: <a href="https://minikube.sigs.k8s.io/docs/start/">minikube</a>.</p>
+<p>
+The good thing?  The basics of Kubernetes boil down to three new concepts: <code class="verbatim">Pods</code>, <code class="verbatim">Deployments</code>, and <code class="verbatim">Services</code>.</p>
+<div id="outline-container-headline-1" class="outline-3">
+<h3 id="headline-1">
+Terminology
+</h3>
+<div id="outline-text-headline-1" class="outline-text-3">
+<p><code class="verbatim">Pods</code> allow multiple Docker containers to coexist within the same network space so they can communicate with each other over <code class="verbatim">localhost</code>, almost as if they were services running on the same computer.  We will explore multi-container <code class="verbatim">Pods</code> in a future series, but we&#39;ll follow the lead of the <a href="https://bootstrapping-microservices.com/">Bootstrapping Microservices</a> book and stick with single containers <code class="verbatim">Pods</code> for now.</p>
+<p>
+What happens if a <code class="verbatim">Pod</code> fails?  Do they restart automatically?  No, that&#39;s where <code class="verbatim">Deployments</code> come in.  <code class="verbatim">Deployments</code> ensure that a certain number of <code class="verbatim">Pods</code> are running at the same time.  If a <code class="verbatim">Pod</code> dies, the <code class="verbatim">Deployment</code> removes it and restarts another.</p>
+<p>
+Can we access <code class="verbatim">Pods</code> managed by <code class="verbatim">Deployment</code> via their IP?  We can, but their IPs won&#39;t stay consistent if a <code class="verbatim">Pod</code> dies and the <code class="verbatim">Deployment</code> replaces it with a new <code class="verbatim">Pod</code>.</p>
+<p>
+That&#39;s where <code class="verbatim">Services</code> come in.  <code class="verbatim">Services</code> provide a stable IP address to conveniently access the <code class="verbatim">Pods</code> managed by a <code class="verbatim">Deployment</code>.  We will be covering <code class="verbatim">Services</code> of type <code class="verbatim">NodePort</code> and <code class="verbatim">LoadBalancer</code> in this week&#39;s article.</p>
+<p>
+We are about to dive into the weeds a bit, so with those Kubernetes-specific terms out of the way, let&#39;s begin!</p>
+</div>
+</div>
+<div id="outline-container-headline-2" class="outline-3">
+<h3 id="headline-2">
+Configuration
+</h3>
+<div id="outline-text-headline-2" class="outline-text-3">
+<p>Every Kubernetes object contains a <a href="https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/apis/meta/v1/types.go#L42">TypeMeta</a> struct that includes two fields: <code class="verbatim">apiVersion:</code> and <code class="verbatim">kind:</code>.  They optionally, but preferrably, include an <a href="https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/apis/meta/v1/types.go#L111">ObjectMeta</a> field: <code class="verbatim">metadata:</code>, which includes the <code class="verbatim">name:</code> of the Deployment or Service.</p>
+<p>
+<code class="verbatim">Deployments</code> and <code class="verbatim">Services</code> also both include a <code class="verbatim">spec:</code> field: <a href="https://github.com/kubernetes/kubernetes/blob/release-1.31/pkg/apis/apps/types.go#L368">DeploymentSpec</a> for <code class="verbatim">Deployments</code> and <a href="https://github.com/kubernetes/kubernetes/blob/release-1.31/pkg/apis/core/types.go#L4515">ServiceSpec</a> for <code class="verbatim">Services</code>.</p>
+<div id="outline-container-headline-3" class="outline-4">
+<h4 id="headline-3">
+Defining a Deployment. (<a href="https://github.com/kubernetes/kubernetes/blob/release-1.31/pkg/apis/apps/types.go#L353">source</a>)
+</h4>
+<div id="outline-text-headline-3" class="outline-text-4">
+<p>CLOCK: [2024-10-04 Fri 19:56]–[2024-10-04 Fri 20:03] =&gt;  0:07</p>
+<p>The <code class="verbatim">spec:</code> field of <code class="verbatim">Deployments</code> has two mandatory fields: <code class="verbatim">replicas:</code> and <code class="verbatim">template:</code>.  The <code class="verbatim">replicas:</code> field specifies the number of <code class="verbatim">Pods</code> to maintain while the <code class="verbatim">template:</code> field is the <a href="https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/types.go#L4160 ">PodSpec</a> to instantiate.</p>
+<p>
+A third, optional but recommended, field is <code class="verbatim">selector:</code>.  It specifies which <code class="verbatim">Pods</code> the <code class="verbatim">Deployment</code> manages.</p>
+<p>
+For our purposes here, the <code class="verbatim">template:</code> field provides <code class="verbatim">labels:</code> for this template and the <code class="verbatim">PodSpec</code> under <code class="verbatim">spec:</code>.</p>
+<p>
+The primary field we are interested in at the moment is <code class="verbatim">containers:</code>, which is a list of containers belonging to the <code class="verbatim">Pod</code>.  We assign each container a <code class="verbatim">name:</code>, specify the <code class="verbatim">image:</code> to use, the <code class="verbatim">imagePullPolicy:</code>, and the environment variables for the container as a list under <code class="verbatim">env:</code>.</p>
+</div>
+</div>
+<div id="outline-container-headline-4" class="outline-4">
+<h4 id="headline-4">
+Defining a Service. (<a href="https://github.com/kubernetes/kubernetes/blob/release-1.31/pkg/apis/core/types.go#L4749">source</a>)
+</h4>
+<div id="outline-text-headline-4" class="outline-text-4">
+<p>The <code class="verbatim">spec:</code> field for <code class="verbatim">Services</code> is quite a bit simpler.  Similar to the <code class="verbatim">Deployment</code>&#39;s selector, we specify a <code class="verbatim">key:value</code> pair of <code class="verbatim">Pods</code> to route requests to.</p>
+<p>
+We then specify the service <code class="verbatim">type</code> and a list of <code class="verbatim">ports</code> to map from the outside world to our <code class="verbatim">Pods</code>.</p>
+<p>
+See, much simpler?  Finally, on to our first round with <code class="verbatim">minikube</code>.</p>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-headline-5" class="outline-3">
+<h3 id="headline-5">
+Round 1: Learning minikube.
+</h3>
+<div id="outline-text-headline-5" class="outline-text-3">
+<p><code class="verbatim">minikube</code> is a great Kubernetes distribution for learning to develop and test microservices locally.  The ability to experiment at no expense is, in my opinion, its greatest value.</p>
+<p>
+Creating a <code class="verbatim">minikube</code> cluster is very straightforward:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>minikube start <span style="color:#f92672">[</span>-p clusterName<span style="color:#f92672">]</span></span></span></code></pre></div>
+</div>
+<p>
+That command takes a short while to start the given cluster and configure <code class="verbatim">kubectl</code> to interact with <code class="verbatim">minikube</code>.  (Or use <code class="verbatim">minikube kubectl --</code> if you don&#39;t have <code class="verbatim">kubectl</code> installed.)</p>
+<p>
+Note that while <code class="verbatim">kubectl</code> will be configured to interact with Kubernetes, Docker will not.  Use the following command to address this issue:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>eval <span style="color:#66d9ef">$(</span>minikube docker-env -p <span style="color:#f92672">[</span>instance<span style="color:#f92672">]</span><span style="color:#66d9ef">)</span></span></span></code></pre></div>
+</div>
+<p>
+<code class="verbatim">docker build</code> commands will now create images in your <code class="verbatim">minikube registry</code>.</p>
+<p>
+Stopping a <code class="verbatim">minikube</code> cluster is equally straightforward:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>minikube stop <span style="color:#f92672">[</span>-p clusterName<span style="color:#f92672">]</span></span></span></code></pre></div>
+</div>
+</div>
+</div>
+<div id="outline-container-headline-6" class="outline-3">
+<h3 id="headline-6">
+Round 2: Chapter 3, <code class="verbatim">minikube</code> edition. (<a href="https://github.com/Bootstrapping-Microservices-in-Go/chapter-06/tree/main/example-1">source</a>)
+</h3>
+<div id="outline-text-headline-6" class="outline-text-3">
+<p>CLOCK: [2024-10-06 Sun 22:29]–[2024-10-06 Sun 23:18] =&gt;  0:49</p>
+<p>If you remember, Chapter 3 ends with a self-contained, containerized <code class="verbatim">video-streaming</code> microservice.</p>
+<p>
+We will now learn how to load that container into the <code class="verbatim">minikube</code> registry, create a <code class="verbatim">Pod</code> from it, deploy it, and expose it via a <code class="verbatim">Service</code>.</p>
+<p>
+This will be be a bit tedious because I&#39;m going to explain the reasoning behind every single step, but that&#39;s so you understand what&#39;s going on.  (And so I don&#39;t mistakenly mislead you.)</p>
+<div id="outline-container-headline-7" class="outline-4">
+<h4 id="headline-7">
+Step 1: Start our instance of Kubernetes.
+</h4>
+<div id="outline-text-headline-7" class="outline-text-4">
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>minikube start</span></span></code></pre></div>
+</div>
+<p>
+This command starts our Kubernetes instance.  Without the <code class="verbatim">-p</code> flag, this uses the default <code class="verbatim">minikube</code> profile.  We prefer using a different one, like <code class="verbatim">FlixTube</code>.</p>
+<p>
+Instead of appending <code class="verbatim">-p FlixTube</code> to every command, we can also use the <code class="verbatim">MINIKUBE_PROFILE</code> environment variable like so:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>export MINIKUBE_PROFILE<span style="color:#f92672">=</span>FlixTube</span></span></code></pre></div>
+</div>
+<p>
+Either way works, but I find using the <code class="verbatim">.env</code> file much simpler.</p>
+<ol>
+<li><code class="verbatim">minikube start</code></li>
+<li><code class="verbatim">cd video-streaming</code></li>
+<li><code class="verbatim">docker build -t video-streaming:1 -f Dockerfile.prod</code></li>
+<li><code class="verbatim">cd ..</code></li>
+<li><code class="verbatim">minikube kubectl -- apply -f deploy.yml</code></li>
+<li><code class="verbatim">minikube kubectl -- delete -f delete.yml</code></li>
+<li><code class="verbatim">minikube stop</code></li>
+</ol>
+</div>
+</div>
+<div id="outline-container-headline-8" class="outline-4">
+<h4 id="headline-8">
+Step 2: Source the environment variables for Docker.
+</h4>
+<div id="outline-text-headline-8" class="outline-text-4">
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>eval <span style="color:#66d9ef">$(</span>minikube docker-env<span style="color:#66d9ef">)</span></span></span></code></pre></div>
+</div>
+<p>
+This lets all <code class="verbatim">docker</code> commands use the <code class="verbatim">minikube</code> image registry by default, so you won&#39;t yet see any images with <code class="verbatim">docker image ls</code>.</p>
+</div>
+</div>
+<div id="outline-container-headline-9" class="outline-4">
+<h4 id="headline-9">
+Step 3: Build the Docker image for the registry.
+</h4>
+<div id="outline-text-headline-9" class="outline-text-4">
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>cd video-streaming
+</span></span><span style="display:flex;"><span>docker build -t video-streaming:1 -f Dockerfile.prod
+</span></span><span style="display:flex;"><span>cd ..</span></span></code></pre></div>
+</div>
+<p>
+This builds our production Dockerfile for the <code class="verbatim">video-streaming</code> microservice, tags it with the version <code class="verbatim">1</code>, and pushes it to the <code class="verbatim">minikube</code> image registry.</p>
+</div>
+</div>
+<div id="outline-container-headline-10" class="outline-4">
+<h4 id="headline-10">
+Step 4: Create your Deployment configuration.
+</h4>
+<div id="outline-text-headline-10" class="outline-text-4">
+<p>This is where the Terminology and Configuration sections come in handy.  We need to create a <code class="verbatim">video-streaming-deployment</code> and a <code class="verbatim">video-streaming-service</code> to access our service.</p>
+<p>
+The configuration:</p>
+<div class="src src-yaml">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">apps/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">video-streaming-deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">replicas</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">selector</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">matchLabels</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">app</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">app</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">containers</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">image</span>: <span style="color:#ae81ff">video-streaming:1</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">imagePullPolicy</span>: <span style="color:#ae81ff">Never</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">env</span>:
+</span></span><span style="display:flex;"><span>            - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">PORT</span>
+</span></span><span style="display:flex;"><span>              <span style="color:#f92672">value</span>: <span style="color:#e6db74">&#34;4000&#34;</span>
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Service</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">video-streaming-service</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">selector</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">app</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">type</span>: <span style="color:#ae81ff">NodePort</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">ports</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">protocol</span>: <span style="color:#ae81ff">TCP</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">port</span>: <span style="color:#ae81ff">80</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">targetPort</span>: <span style="color:#ae81ff">4000</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">nodePort</span>: <span style="color:#ae81ff">30000</span></span></span></code></pre></div>
+</div>
+<p>
+Notice <code class="verbatim">spec.ports[0].nodePort</code>.  That&#39;s the port we will access our service through.</p>
+</div>
+</div>
+<div id="outline-container-headline-11" class="outline-4">
+<h4 id="headline-11">
+Step 5: Apply your Deployment configuration.
+</h4>
+<div id="outline-text-headline-11" class="outline-text-4">
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>minikube kubectl -- apply -f deploy.yml</span></span></code></pre></div>
+</div>
+</div>
+</div>
+<div id="outline-container-headline-12" class="outline-4">
+<h4 id="headline-12">
+Step 6: Test your microservice.  Bask in its glory.
+</h4>
+<div id="outline-text-headline-12" class="outline-text-4">
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>minikube ip</span></span></code></pre></div>
+</div>
+<p>
+Visit <code class="verbatim">http://[ip]:30000/video</code> and watch the sample video play.</p>
+<p>
+Marvelous!</p>
+</div>
+</div>
+<div id="outline-container-headline-13" class="outline-4">
+<h4 id="headline-13">
+Step 7: Destroy your Deployment.
+</h4>
+<div id="outline-text-headline-13" class="outline-text-4">
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>minikube docker -- delete -f deploy.yml</span></span></code></pre></div>
+</div>
+<p>
+Not destroying your Deployments and Services wastes disk space.</p>
+</div>
+</div>
+<div id="outline-container-headline-14" class="outline-4">
+<h4 id="headline-14">
+Step 8: Stop your Kubernetes instance.
+</h4>
+<div id="outline-text-headline-14" class="outline-text-4">
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>minikube stop</span></span></code></pre></div>
+</div>
+<p>
+This shuts <code class="verbatim">minikube</code> down for now.</p>
+</div>
+</div>
+<div id="outline-container-headline-15" class="outline-4">
+<h4 id="headline-15">
+Step 9: Repeat these steps until your comfortable.
+</h4>
+<div id="outline-text-headline-15" class="outline-text-4">
+<p>Repetition is the key to mastery.  Try these steps yourself without looking at this guide.</p>
+<p>
+Did you succeed?  Can you recite them from memory as if you were teaching them to someone?</p>
+<p>
+Congrats if you can!  You&#39;re well on your way to mastering the <code class="verbatim">minikube</code> Kubernetes distribution.</p>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-headline-16" class="outline-3">
+<h3 id="headline-16">
+Round 3: Chapter 3, <code class="verbatim">LoadBalancer</code> edition. (<a href="https://github.com/Bootstrapping-Microservices-in-Go/chapter-06/tree/main/example-2">source</a>)
+</h3>
+<div id="outline-text-headline-16" class="outline-text-3">
+<p>The Round 2 version was pretty cool, but Services of type <code class="verbatim">NodePort</code> aren&#39;t ideal for production use.  We need Services of type <code class="verbatim">LoadBalancer</code> for production deployments.</p>
+<p>
+Fortunately, <code class="verbatim">minikube</code> has us covered here as well.</p>
+<div id="outline-container-headline-17" class="outline-4">
+<h4 id="headline-17">
+Step 1: Update video-streaming-deployment&#39;s <code class="verbatim">imagePullPolicy</code>.
+</h4>
+<div id="outline-text-headline-17" class="outline-text-4">
+<p>We won&#39;t have the Docker images on our production machines, so we will need to pull the image if it doesn&#39;t already exist.  That involves a tiny change to the <code class="verbatim">imagePullPolicy</code> of each of our containers.=:</p>
+<div class="src src-yaml">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">apps/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">replicas</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">selector</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">matchLabels</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">app</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">app</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">containers</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">image</span>: <span style="color:#ae81ff">video-streaming:1</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">imagePullPolicy</span>: <span style="color:#ae81ff">IfNotPresent</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">env</span>:
+</span></span><span style="display:flex;"><span>            - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">PORT</span>
+</span></span><span style="display:flex;"><span>              <span style="color:#f92672">value</span>: <span style="color:#e6db74">&#34;4000&#34;</span></span></span></code></pre></div>
+</div>
+<p>
+Notice we use <code class="verbatim">IfNotPresent</code> instead of <code class="verbatim">Never</code>.</p>
+</div>
+</div>
+<div id="outline-container-headline-18" class="outline-4">
+<h4 id="headline-18">
+Step 2: Update video-streaming-service&#39;s <code class="verbatim">type</code>.
+</h4>
+<div id="outline-text-headline-18" class="outline-text-4">
+<p>Production Kubernetes environments will require Services to use type <code class="verbatim">LoadBalancer</code> to distribute traffic instead of <code class="verbatim">NodePort</code>.  One tiny change makes that possible:</p>
+<div class="src src-yaml">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Service</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">video-streaming-service</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">selector</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">app</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">type</span>: <span style="color:#ae81ff">LoadBalancer</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">ports</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">protocol</span>: <span style="color:#ae81ff">TCP</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">port</span>: <span style="color:#ae81ff">80</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">targetPort</span>: <span style="color:#ae81ff">4000</span></span></span></code></pre></div>
+</div>
+</div>
+</div>
+<div id="outline-container-headline-19" class="outline-4">
+<h4 id="headline-19">
+Step 3: Tunnel traffic to our local <code class="verbatim">LoadBalancer</code>.
+</h4>
+<div id="outline-text-headline-19" class="outline-text-4">
+<p>Earlier we accessed the <code class="verbatim">NodePort</code> directly via the IP given to us by <code class="verbatim">minikube ip</code>.  That works locally during development, but it will fail in Production.</p>
+<p>
+A <code class="verbatim">LoadBalancer</code> gives us a static IP that routes traffic to all healthy <code class="verbatim">Pods</code> in our Production environment, but <code class="verbatim">minikube</code> only gives us a Cluster IP by default.</p>
+<p>
+Fortunately, <code class="verbatim">minikube</code> also provides a way to expose the <code class="verbatim">LoadBalancer</code> IP to our dev machine so we can test our services locally with the same configuration we will use in Production.</p>
+<p>
+How?  In another terminal, run the following command:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>minikube tunnel</span></span></code></pre></div>
+</div>
+<p>
+You will likely be prompted for your password, but then you&#39;ll see output similar to this:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>Status:
+</span></span><span style="display:flex;"><span>        machine: flixtube
+</span></span><span style="display:flex;"><span>        pid: <span style="color:#ae81ff">129134</span>
+</span></span><span style="display:flex;"><span>        route: 10.96.0.0/12 -&gt; 192.168.58.2
+</span></span><span style="display:flex;"><span>        minikube: Running
+</span></span><span style="display:flex;"><span>        services: <span style="color:#f92672">[</span>video-streaming<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>    errors:
+</span></span><span style="display:flex;"><span>                minikube: no errors
+</span></span><span style="display:flex;"><span>                router: no errors
+</span></span><span style="display:flex;"><span>                loadbalancer emulator: no errors</span></span></code></pre></div>
+</div>
+<p>
+Return to your original tunnel and execute the following command:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>minikube kubectl -- get services</span></span></code></pre></div>
+</div>
+<p>
+This will show you an External IP you can access from your browser:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>NAME              TYPE           CLUSTER-IP      EXTERNAL-IP     PORT<span style="color:#f92672">(</span>S<span style="color:#f92672">)</span>        AGE
+</span></span><span style="display:flex;"><span>kubernetes        ClusterIP      10.96.0.1       &lt;none&gt;          443/TCP        3d19h
+</span></span><span style="display:flex;"><span>video-streaming   LoadBalancer   10.96.104.195   10.96.104.195   80:31953/TCP   37m</span></span></code></pre></div>
+</div>
+<p>
+The steps you just followed will let you access your microservices application as if it&#39;s deployed to <code class="verbatim">GCP</code>, <code class="verbatim">AWS</code>, <code class="verbatim">LiNode</code>, or any provider of your choice whenever you are ready.</p>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-headline-20" class="outline-3">
+<h3 id="headline-20">
+Conclusion
+</h3>
+<div id="outline-text-headline-20" class="outline-text-3">
+<p>The book <a href="https://bootstrapping-microservices.com/">Bootstrapping Microservices</a> recommends trying to develop with both <code class="verbatim">docker compose</code> and Kubernetes to decide which you prefer.</p>
+<p>
+Personally, I&#39;m still undecided.  <code class="verbatim">docker compose</code> uses less memory, but using <code class="verbatim">minikube</code> to become more comfortable with Kubernetes is an enticing option.</p>
+<p>
+Whatever you choose, keep developing!</p>
+<p>
+And next week, we&#39;ll simplify our life by learning a bit about Infrastructure as Code with <a href="https://www.terraform.io/">Terraform</a>.  That will save us countless headaches having to learn the UI of whichever hosting provider we choose.</p>
+</div>
+</div>
+]]></content:encoded>
+    </item>
     <item>
       <title>Quick Container-based Microservice Development with Air</title>
       <link>https://example.org/bootstrapping-microservices/air-for-live-dev-container-reloads-and-messaging-between-microservices/</link>

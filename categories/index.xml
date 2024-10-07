@@ -7,12 +7,12 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© Steven Edwards</copyright>
-    <lastBuildDate>Tue, 01 Oct 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 07 Oct 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://example.org/categories/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>&#34;Bootstrapping</title>
       <link>https://example.org/categories/bootstrapping/</link>
-      <pubDate>Tue, 01 Oct 2024 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 07 Oct 2024 00:00:00 +0000</pubDate>
       <guid>https://example.org/categories/bootstrapping/</guid>
       <description></description>
       <content:encoded><![CDATA[]]></content:encoded>
@@ -20,7 +20,7 @@
     <item>
       <title>Microservices&#34;</title>
       <link>https://example.org/categories/microservices/</link>
-      <pubDate>Tue, 01 Oct 2024 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 07 Oct 2024 00:00:00 +0000</pubDate>
       <guid>https://example.org/categories/microservices/</guid>
       <description></description>
       <content:encoded><![CDATA[]]></content:encoded>
