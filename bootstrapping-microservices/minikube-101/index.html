@@ -61,7 +61,7 @@ The good thing? The basics of Kubernetes boil down to three new concepts: Pods, 
 Terminology Pods allow multiple Docker containers to coexist within the same network space so they can communicate with each other over localhost, almost as if they were services running on the same computer. We will explore multi-container Pods in a future series, but we&#39;ll follow the lead of the Bootstrapping Microservices book and stick with single containers Pods for now.">
   <meta itemprop="datePublished" content="2024-10-07T00:00:00+00:00">
   <meta itemprop="dateModified" content="2024-10-07T00:00:00+00:00">
-  <meta itemprop="wordCount" content="1532">
+  <meta itemprop="wordCount" content="1516">
   <meta itemprop="keywords" content="Microservices,Docker,Minikube">
 
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -137,7 +137,6 @@ Configuration
 Defining a Deployment. (<a href="https://github.com/kubernetes/kubernetes/blob/release-1.31/pkg/apis/apps/types.go#L353">source</a>)
 </h4>
 <div id="outline-text-headline-3" class="outline-text-4">
-<p>CLOCK: [2024-10-04 Fri 19:56]–[2024-10-04 Fri 20:03] =&gt;  0:07</p>
 <p>The <code class="verbatim">spec:</code> field of <code class="verbatim">Deployments</code> has two mandatory fields: <code class="verbatim">replicas:</code> and <code class="verbatim">template:</code>.  The <code class="verbatim">replicas:</code> field specifies the number of <code class="verbatim">Pods</code> to maintain while the <code class="verbatim">template:</code> field is the <a href="https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/types.go#L4160 ">PodSpec</a> to instantiate.</p>
 <p>
 A third, optional but recommended, field is <code class="verbatim">selector:</code>.  It specifies which <code class="verbatim">Pods</code> the <code class="verbatim">Deployment</code> manages.</p>
@@ -193,7 +192,6 @@ Stopping a <code class="verbatim">minikube</code> cluster is equally straightfor
 Round 2: Chapter 3, <code class="verbatim">minikube</code> edition. (<a href="https://github.com/Bootstrapping-Microservices-in-Go/chapter-06/tree/main/example-1">source</a>)
 </h3>
 <div id="outline-text-headline-6" class="outline-text-3">
-<p>CLOCK: [2024-10-06 Sun 22:29]–[2024-10-06 Sun 23:18] =&gt;  0:49</p>
 <p>If you remember, Chapter 3 ends with a self-contained, containerized <code class="verbatim">video-streaming</code> microservice.</p>
 <p>
 We will now learn how to load that container into the <code class="verbatim">minikube</code> registry, create a <code class="verbatim">Pod</code> from it, deploy it, and expose it via a <code class="verbatim">Service</code>.</p>
