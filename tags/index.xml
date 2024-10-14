@@ -7,12 +7,12 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© Steven Edwards</copyright>
-    <lastBuildDate>Mon, 07 Oct 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 14 Oct 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://example.org/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Docker</title>
       <link>https://example.org/tags/docker/</link>
-      <pubDate>Mon, 07 Oct 2024 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 14 Oct 2024 00:00:00 +0000</pubDate>
       <guid>https://example.org/tags/docker/</guid>
       <description></description>
       <content:encoded><![CDATA[]]></content:encoded>
@@ -20,7 +20,7 @@
     <item>
       <title>Microservices</title>
       <link>https://example.org/tags/microservices/</link>
-      <pubDate>Mon, 07 Oct 2024 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 14 Oct 2024 00:00:00 +0000</pubDate>
       <guid>https://example.org/tags/microservices/</guid>
       <description></description>
       <content:encoded><![CDATA[]]></content:encoded>
@@ -28,8 +28,16 @@
     <item>
       <title>Minikube</title>
       <link>https://example.org/tags/minikube/</link>
-      <pubDate>Mon, 07 Oct 2024 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 14 Oct 2024 00:00:00 +0000</pubDate>
       <guid>https://example.org/tags/minikube/</guid>
+      <description></description>
+      <content:encoded><![CDATA[]]></content:encoded>
+    </item>
+    <item>
+      <title>Terraform</title>
+      <link>https://example.org/tags/terraform/</link>
+      <pubDate>Mon, 14 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://example.org/tags/terraform/</guid>
       <description></description>
       <content:encoded><![CDATA[]]></content:encoded>
     </item>

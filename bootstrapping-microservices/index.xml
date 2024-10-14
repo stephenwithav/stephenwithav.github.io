@@ -7,8 +7,260 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© Steven Edwards</copyright>
-    <lastBuildDate>Mon, 07 Oct 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 14 Oct 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://example.org/bootstrapping-microservices/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Terraform 101</title>
+      <link>https://example.org/bootstrapping-microservices/terraform-101/</link>
+      <pubDate>Mon, 14 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://example.org/bootstrapping-microservices/terraform-101/</guid>
+      <description>&lt;p&gt;&#xA;Manually starting microservices as we did last week is tedious, especially when managing multiple microservices.  Thankfully, &lt;code class=&#34;verbatim&#34;&gt;Terraform&lt;/code&gt; comes to our rescue.&lt;/p&gt;&#xA;&lt;p&gt;&#xA;Need to switch from &lt;code class=&#34;verbatim&#34;&gt;GCP&lt;/code&gt; to &lt;code class=&#34;verbatim&#34;&gt;AWS&lt;/code&gt; but dread learning the new UI to manage your infrastructure?  Or migrate from your local development environment to a hosted provider?  &lt;code class=&#34;verbatim&#34;&gt;Terraform&lt;/code&gt; is your new best friend.&lt;/p&gt;&#xA;&lt;p&gt;&#xA;The theme of this series is to keep all development local (and free) while you bootstrap your MVP, so our discussion of &lt;code class=&#34;verbatim&#34;&gt;Terraform&lt;/code&gt; will be limited to deploying to a local Kubernetes cluster just like we did manually last week.&lt;/p&gt;</description>
+      <content:encoded><![CDATA[
+<p>
+Manually starting microservices as we did last week is tedious, especially when managing multiple microservices.  Thankfully, <code class="verbatim">Terraform</code> comes to our rescue.</p>
+<p>
+Need to switch from <code class="verbatim">GCP</code> to <code class="verbatim">AWS</code> but dread learning the new UI to manage your infrastructure?  Or migrate from your local development environment to a hosted provider?  <code class="verbatim">Terraform</code> is your new best friend.</p>
+<p>
+The theme of this series is to keep all development local (and free) while you bootstrap your MVP, so our discussion of <code class="verbatim">Terraform</code> will be limited to deploying to a local Kubernetes cluster just like we did manually last week.</p>
+<p>
+<code class="verbatim">Terraform</code> was created by HashiCorp, so it uses the HashiCorp Configuration Language.  Let&#39;s take a look at it before we dive into this week&#39;s code.</p>
+<div id="outline-container-headline-1" class="outline-3">
+<h3 id="headline-1">
+HCL Files
+</h3>
+<div id="outline-text-headline-1" class="outline-text-3">
+<p>HCL files for Kubernetes are essentially YAML files with a different syntax.  Note the similarities in the following <code class="verbatim">Namespace</code> declarations:</p>
+<div class="src src-hcl">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-hcl" data-lang="hcl"><span style="display:flex;"><span><span style="color:#66d9ef">resource</span> <span style="color:#e6db74">&#34;kubernetes_namespace&#34; &#34;flixtube&#34;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">metadata</span> {
+</span></span><span style="display:flex;"><span>    name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;flixtube&#34;</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
+</div>
+<div class="src src-yaml">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Namespace</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">flixtube</span></span></span></code></pre></div>
+</div>
+<p>
+Every <code class="verbatim">kind:</code> in <code class="verbatim">YAML</code> maps to a <code class="verbatim">kubernetes_[kind]</code> in <code class="verbatim">HCL</code>, making translations fairly easy.</p>
+</div>
+</div>
+<div id="outline-container-headline-2" class="outline-3">
+<h3 id="headline-2">
+Round 1: Providers and Namespaces. (<a href="https://github.com/Bootstrapping-Microservices-in-Go/chapter-07/tree/main/example-1">source</a>)
+</h3>
+<div id="outline-text-headline-2" class="outline-text-3">
+<p><code class="verbatim">Terraform</code> communicates with third-party vendors like <code class="verbatim">AWS</code> and <code class="verbatim">GCP</code> using plugins called <code class="verbatim">Providers</code>.  These <code class="verbatim">Providers</code> define <code class="verbatim">resources</code> that are used for configuration, so let&#39;s take a quick look at our <code class="verbatim">providers.tf</code> file.</p>
+<div class="src src-hcl">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-hcl" data-lang="hcl"><span style="display:flex;"><span><span style="color:#66d9ef">terraform</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">required_providers</span> {
+</span></span><span style="display:flex;"><span>    kubernetes <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>      source  <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;hashicorp/kubernetes&#34;</span>
+</span></span><span style="display:flex;"><span>      version <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;~&gt; 2.0&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">provider</span> <span style="color:#e6db74">&#34;kubernetes&#34;</span> {
+</span></span><span style="display:flex;"><span>  config_path <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;~/.kube/config&#34;</span>
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
+</div>
+<p>
+The <code class="verbatim">Kubernetes</code> <code class="verbatim">Provider</code> defines several <code class="verbatim">resources</code> for use while defining our cluster.  The highest-level <code class="verbatim">resource</code> for us is a <code class="verbatim">Namespace</code>, which allows us to partition different services by anything we choose.  (e.g., dev/test/prod)</p>
+<p>
+Our example:</p>
+<div class="src src-hcl">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-hcl" data-lang="hcl"><span style="display:flex;"><span><span style="color:#66d9ef">resource</span> <span style="color:#e6db74">&#34;kubernetes_namespace&#34; &#34;flixtube&#34;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">metadata</span> {
+</span></span><span style="display:flex;"><span>    name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;flixtube&#34;</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
+</div>
+<p>
+We can now run <code class="verbatim">terraform init</code>, then <code class="verbatim">terraform apply</code> to build our infrastructure.  There&#39;s nothing really to see here yet, but <code class="verbatim">minikube kubectl -- get namespaces</code> will prove that our namespace was successfully created.</p>
+<p>
+Yawning at this point is perfectly okay.  All we have proven thus far is that we can successfully use <code class="verbatim">Terraform</code> to build the most basic of infrastructures.  A quick <code class="verbatim">terraform destroy</code> will tear the existing infrastructure down, allowing us to build and destroy it as many times as it takes to get comfortable.</p>
+</div>
+</div>
+<div id="outline-container-headline-3" class="outline-3">
+<h3 id="headline-3">
+Round 2: Container Registry. (<a href="https://github.com/Bootstrapping-Microservices-in-Go/chapter-07/tree/main/example-2">source</a>)
+</h3>
+<div id="outline-text-headline-3" class="outline-text-3">
+<p><code class="verbatim">Kubernetes</code> can easily pull Docker images from outside registries like Docker Hub, but having your containers cached locally to a container registry is more convenient.</p>
+<p>
+Creating a local container registry is a simple <code class="verbatim">minikube addons enable registry</code> on the command line.  <code class="verbatim">Terraform</code> makes it just a bit more difficult, requiring a <code class="verbatim">null_resource</code> along with a <code class="verbatim">local-exec</code> <code class="verbatim">provisioner</code> that defines the command to run.</p>
+<p>
+The <code class="verbatim">minikube addons enable registry</code> command requires either a <code class="verbatim">-p</code> command line flag to specify which profile to use OR a <code class="verbatim">MINIKUBE_PROFILE</code> environment variable specifying the same.  We&#39;ll stick with the latter for simplicity&#39;s sake by defining an <code class="verbatim">environment</code> in the <code class="verbatim">provisioner</code> section.</p>
+<p>
+We give the <code class="verbatim">null_resource</code> the name of <code class="verbatim">enable_registry</code> to make the logging clear in the following <code class="verbatim">container-registry.tf</code> file.</p>
+<div class="src src-hcl">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-hcl" data-lang="hcl"><span style="display:flex;"><span><span style="color:#66d9ef">resource</span> <span style="color:#e6db74">&#34;null_resource&#34; &#34;enable_registry&#34;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">provisioner</span> <span style="color:#e6db74">&#34;local-exec&#34;</span> {
+</span></span><span style="display:flex;"><span>    command <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;minikube addons enable registry&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    environment <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>      MINIKUBE_PROFILE <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;flixtube&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
+</div>
+<p>
+This doesn&#39;t do too much locally, but it does more closely mirror our intended production environment.</p>
+<div id="outline-container-headline-4" class="outline-4">
+<h4 id="headline-4">
+Warning
+</h4>
+<div id="outline-text-headline-4" class="outline-text-4">
+<p>The following error means your <code class="verbatim">minikube</code> cluster hasn&#39;t started:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>Error running command <span style="color:#e6db74">&#39;minikube addons enable registry&#39;</span>: exit status 10.</span></span></code></pre></div>
+</div>
+<p>
+Ensure you have run <code class="verbatim">minikube start</code> if you see that error.</p>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-headline-5" class="outline-3">
+<h3 id="headline-5">
+Round 3: Variables. (<a href="https://github.com/Bootstrapping-Microservices-in-Go/chapter-07/tree/main/example-3">source</a>)
+</h3>
+<div id="outline-text-headline-5" class="outline-text-3">
+<p>The <code class="verbatim">variables.tf</code> file gives us a centralized location to add, and change, our important variables.</p>
+<div class="src src-hcl">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-hcl" data-lang="hcl"><span style="display:flex;"><span><span style="color:#66d9ef">variable</span> <span style="color:#e6db74">&#34;app_name&#34;</span> {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
+</div>
+<p>
+Notice that we don&#39;t assign a value in the variable declaration.  The lack of assignment tells <code class="verbatim">Terraform</code> to ask us for the value interactively.  (We can also assign it from the command line with, e.g., <code class="verbatim">terraform apply -var app_name=flixtube</code>.)</p>
+<p>
+We can then reference that variable in <code class="verbatim">container-registry.tf</code>:</p>
+<div class="src src-hcl">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-hcl" data-lang="hcl"><span style="display:flex;"><span><span style="color:#66d9ef">resource</span> <span style="color:#e6db74">&#34;null_resource&#34; &#34;enable_registry&#34;</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">provisioner</span> <span style="color:#e6db74">&#34;local-exec&#34;</span> {
+</span></span><span style="display:flex;"><span>    command <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;minikube addons enable registry&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    environment <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex;"><span>      MINIKUBE_PROFILE <span style="color:#f92672">=</span> <span style="color:#66d9ef">var</span>.<span style="color:#66d9ef">app_name</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
+</div>
+<p>
+One <code class="verbatim">terraform init</code> and <code class="verbatim">terraform apply</code> later, you will have another functioning Kubernetes cluster.</p>
+<p>
+<code class="verbatim">terraform destroy</code> and we will move on to the final step.</p>
+</div>
+</div>
+<div id="outline-container-headline-6" class="outline-3">
+<h3 id="headline-6">
+Round 4: Push image to a <code class="verbatim">minikube</code> registry. (<a href="https://github.com/Bootstrapping-Microservices-in-Go/chapter-07/tree/main/example-4">source</a>)
+</h3>
+<div id="outline-text-headline-6" class="outline-text-3">
+<p>Our goal in this series is to learn to mimic developing a microservice application AND deploy it to a production-like environment for free locally.</p>
+<p>
+<code class="verbatim">Terraform</code> is immensely helpful in this regard, but we are still using our local Docker images.  Can we fix that?</p>
+<p>
+Of course!</p>
+<p>
+To do so, we need to configure Docker to use the <code class="verbatim">minikube</code> container registry, push the image to the registry, tell the Kubernetes <code class="verbatim">Deployment</code> to use the registry&#39;s image, expose the <code class="verbatim">Service</code> on <code class="verbatim">localhost</code>, and test it via the browser.</p>
+<p>
+<code class="verbatim">Terraform</code> is already configured to use our local registry after we run <code class="verbatim">terraform apply</code>, so the (almost) final steps are the following straightforward Docker commands:</p>
+<ol>
+<li>Build the image: <code class="verbatim">docker build -t video-streaming:1 .</code></li>
+<li>Tag the image: <code class="verbatim">docker tag video-streaming:1 localhost:5000/video-streaming:1</code></li>
+<li>Push the image to the registry: <code class="verbatim">docker push localhost:5000/video-streaming:1</code></li>
+</ol>
+<p>The following steps are a bit more interactive:</p>
+<ol>
+<li value="4">
+<p>Update <code class="verbatim">deploy.yml</code> to use the registry&#39;s image.</p>
+<div class="src src-yaml">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">apps/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Deployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span><span style="color:#f92672">name</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span><span style="color:#f92672">replicas</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">selector</span>:
+</span></span><span style="display:flex;"><span> <span style="color:#f92672">matchLabels</span>:
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">app</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span> <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>     <span style="color:#f92672">app</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span> <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">containers</span>:
+</span></span><span style="display:flex;"><span>     - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span>       <span style="color:#f92672">image</span>: <span style="color:#ae81ff">localhost:5000/video-streaming:1</span>
+</span></span><span style="display:flex;"><span>       <span style="color:#f92672">imagePullPolicy</span>: <span style="color:#ae81ff">IfNotPresent</span>
+</span></span><span style="display:flex;"><span>       <span style="color:#f92672">env</span>:
+</span></span><span style="display:flex;"><span>         - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">PORT</span>
+</span></span><span style="display:flex;"><span>           <span style="color:#f92672">value</span>: <span style="color:#e6db74">&#34;4000&#34;</span>
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Service</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span><span style="color:#f92672">name</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span><span style="color:#f92672">selector</span>:
+</span></span><span style="display:flex;"><span> <span style="color:#f92672">app</span>: <span style="color:#ae81ff">video-streaming</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">type</span>: <span style="color:#ae81ff">LoadBalancer</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">ports</span>:
+</span></span><span style="display:flex;"><span> - <span style="color:#f92672">protocol</span>: <span style="color:#ae81ff">TCP</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">port</span>: <span style="color:#ae81ff">80</span>
+</span></span><span style="display:flex;"><span>   <span style="color:#f92672">targetPort</span>: <span style="color:#ae81ff">4000</span></span></span></code></pre></div>
+</div>
+</li>
+<li>
+<p>Create a tunnel to expose your service: <code class="verbatim">minikube tunnel</code> like <a href="/bootstrapping-microservices/minikube-101/#headline-19">last week</a>.</p>
+<p>
+Your output, after entering your password, will look something lke this:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>Status:
+</span></span><span style="display:flex;"><span>     machine: flixtube
+</span></span><span style="display:flex;"><span>     pid: <span style="color:#ae81ff">425582</span>
+</span></span><span style="display:flex;"><span>     route: 10.96.0.0/12 -&gt; 192.168.49.2
+</span></span><span style="display:flex;"><span>     minikube: Running
+</span></span><span style="display:flex;"><span>     services: <span style="color:#f92672">[</span>video-streaming<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span> errors:
+</span></span><span style="display:flex;"><span>             minikube: no errors
+</span></span><span style="display:flex;"><span>             router: no errors
+</span></span><span style="display:flex;"><span>             loadbalancer emulator: no errors</span></span></code></pre></div>
+</div>
+</li>
+<li>
+<p>Get the service&#39;s IP: <code class="verbatim">minikube kubectl -- get services</code>.</p>
+<p>
+Again, your output:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>NAME              TYPE           CLUSTER-IP      EXTERNAL-IP     PORT<span style="color:#f92672">(</span>S<span style="color:#f92672">)</span>        AGE
+</span></span><span style="display:flex;"><span>kubernetes        ClusterIP      10.96.0.1       &lt;none&gt;          443/TCP        3d23h
+</span></span><span style="display:flex;"><span>video-streaming   LoadBalancer   10.110.40.191   10.110.40.191   80:30387/TCP   3d17h</span></span></code></pre></div>
+</div>
+</li>
+<li>Access the service via <code class="verbatim">video-streaming</code>&#39;s EXTERNAL-IP/video.</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-headline-7" class="outline-3">
+<h3 id="headline-7">
+Conclusion
+</h3>
+<div id="outline-text-headline-7" class="outline-text-3">
+<p>While <code class="verbatim">Terraform</code> is an optional chapter in <a href="https://bootstrapping-microservices.com/">Bootstrapping Microservices</a>, I definitely recommend reading it at some point.</p>
+<p>
+Manually deploying multiple microservice with <code class="verbatim">minikube kubectl</code> quickly becomes an impediment to rapid development.  And anything that hinders rapid development should be avoided.</p>
+<p>
+This series (and the book it&#39;s derived from) has focused more on learning Kubernetes and Docker than best coding practices so far.  That will be addressed next week with the introduction of pre-commit hooks with <a href="https://github.com/nektos/act">act</a>, which will prevent us from pushing failing code to our remote repository.</p>
+</div>
+</div>
+]]></content:encoded>
+    </item>
     <item>
       <title>Minikube 101</title>
       <link>https://example.org/bootstrapping-microservices/minikube-101/</link>
