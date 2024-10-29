@@ -3,30 +3,45 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://example.org/categories/bootstrapping/</loc>
-    <lastmod>2024-10-14T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-29T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/bootstrapping-microservices/</loc>
-    <lastmod>2024-10-14T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-29T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/categories/</loc>
-    <lastmod>2024-10-14T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://example.org/tags/cd/</loc>
+    <lastmod>2024-10-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://example.org/tags/ci/</loc>
+    <lastmod>2024-10-29T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/tags/docker/</loc>
-    <lastmod>2024-10-14T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://example.org/tags/git/</loc>
+    <lastmod>2024-10-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://example.org/bootstrapping-microservices/git-hooks-and-github-actions/</loc>
+    <lastmod>2024-10-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://example.org/tags/github/</loc>
+    <lastmod>2024-10-29T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/tags/microservices/</loc>
-    <lastmod>2024-10-14T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-29T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/categories/microservices/</loc>
-    <lastmod>2024-10-14T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://example.org/tags/minikube/</loc>
-    <lastmod>2024-10-14T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-29T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/</loc>
-    <lastmod>2024-10-14T00:00:00+00:00</lastmod>
+    <lastmod>2024-10-29T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/tags/</loc>
+    <lastmod>2024-10-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://example.org/tags/minikube/</loc>
     <lastmod>2024-10-14T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://example.org/tags/terraform/</loc>

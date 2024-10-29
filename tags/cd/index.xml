@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Cd on Steven&#39;s Thoughts</title>
+    <link>https://example.org/tags/cd/</link>
+    <description>Recent content in Cd on Steven&#39;s Thoughts</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>© Steven Edwards</copyright>
+    <lastBuildDate>Tue, 29 Oct 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://example.org/tags/cd/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Git Hooks and GitHub Actions</title>
+      <link>https://example.org/bootstrapping-microservices/git-hooks-and-github-actions/</link>
+      <pubDate>Tue, 29 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://example.org/bootstrapping-microservices/git-hooks-and-github-actions/</guid>
+      <description>&lt;p&gt;&#xA;We leaned about minikube &lt;a href=&#34;https://example.org/bootstrapping-microservices/minikube-101/&#34;&gt;three weeks ago&lt;/a&gt;, then about Terraform &lt;a href=&#34;https://example.org/bootstrapping-microservices/terraform-101/&#34;&gt;two weeks ago&lt;/a&gt;.  This week we will learn to use &lt;code class=&#34;verbatim&#34;&gt;GitHub Actions&lt;/code&gt; to ensure that our code is tested on each code push.&lt;/p&gt;&#xA;&lt;div id=&#34;outline-container-headline-1&#34; class=&#34;outline-3&#34;&gt;&#xA;&lt;h3 id=&#34;headline-1&#34;&gt;&#xA;Round 0: git hooks (optional)&#xA;&lt;/h3&gt;&#xA;&lt;div id=&#34;outline-text-headline-1&#34; class=&#34;outline-text-3&#34;&gt;&#xA;&lt;p&gt;If you have been coding for a bit, you will have pushed failing code to your public repo.  This is both frustrating and, at least for me, a bit embarassing.&lt;/p&gt;&#xA;&lt;p&gt;&#xA;&lt;code class=&#34;verbatim&#34;&gt;git hooks&lt;/code&gt; are a partial solution to this problem.  (Only partial because it doesn&amp;#39;t work if you don&amp;#39;t define any tests.)&lt;/p&gt;</description>
+      <content:encoded><![CDATA[
+<p>
+We leaned about minikube <a href="/bootstrapping-microservices/minikube-101/">three weeks ago</a>, then about Terraform <a href="/bootstrapping-microservices/terraform-101/">two weeks ago</a>.  This week we will learn to use <code class="verbatim">GitHub Actions</code> to ensure that our code is tested on each code push.</p>
+<div id="outline-container-headline-1" class="outline-3">
+<h3 id="headline-1">
+Round 0: git hooks (optional)
+</h3>
+<div id="outline-text-headline-1" class="outline-text-3">
+<p>If you have been coding for a bit, you will have pushed failing code to your public repo.  This is both frustrating and, at least for me, a bit embarassing.</p>
+<p>
+<code class="verbatim">git hooks</code> are a partial solution to this problem.  (Only partial because it doesn&#39;t work if you don&#39;t define any tests.)</p>
+<p>
+There are several types of <a href="https://git-scm.com/book/ms/v2/Customizing-Git-Git-Hooks">hooks</a>, but we will focus on <code class="verbatim">pre-commit</code> and <code class="verbatim">pre-push</code>.</p>
+<p>
+<code class="verbatim">pre-commit</code> hooks are executed locally before you&#39;re allowed to write your commit message and are ideal for ensuring you cannot commit failing code.  <code class="verbatim">pre-push</code> hooks are great for ensuring your integration tests succeed so you can&#39;t push broken code to your repository.</p>
+<p>
+But what if you want to push some failing tests at the end of the day (because you follow TDD) and they will help you know where to start on Monday after a long weekend?  Well, <code class="verbatim">git hooks</code> aren&#39;t for you.</p>
+<p>
+Just kidding!</p>
+<p>
+<code class="verbatim">git</code> has a <code class="verbatim">--no-verify</code> flag that prevents hooks from running, so <code class="verbatim">git commit -am &#34;Pushing newest tests&#34; --no-verify</code> and <code class="verbatim">git push --no-verify</code> succeeds.</p>
+<p>
+Are these hooks special?  They&#39;re just shell scripts, so not really.</p>
+<p>
+Let&#39;s take a look at <code class="verbatim">.git/hooks/pre-commit</code>:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#75715e">#!/bin/sh
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>go test -v ./...</span></span></code></pre></div>
+</div>
+<p>
+The <code class="verbatim">pre-commit</code> hook alerts you to failing code as soon as possible if you make frequent commits, which is a useful practice.</p>
+<p>
+You could also choose to place the same test code in <code class="verbatim">.git/hooks/pre-push</code> if you&#39;d rather be alerted to failing tests prior to pushing them to your team or public repo.</p>
+<p>
+Or you could use <code class="verbatim">act</code>, described in the following section, to perform tests before pushing your code to your repo.</p>
+<p>
+You could even continue as is with no automated tests prior to commits or pushes and let your centalized test runner on <code class="verbatim">GitHub</code> run them for you with Continuous Integration tests using <code class="verbatim">GitHub Actions</code>.</p>
+<p>
+A final note before getting there, however:</p>
+<p>
+<code class="verbatim">git</code> doesn&#39;t commit any changes inside your <code class="verbatim">.git</code> folder, so your hooks won&#39;t be pushed to your team&#39;s repo.  You could create a <code class="verbatim">hooks</code> directory in the root of your repository and copy the files there with <code class="verbatim">cp ./git/hooks/* hooks</code> to share your hooks with your team, but the choice is yours.</p>
+<p>
+Now, back to our regularly scheduled tutorial.</p>
+</div>
+</div>
+<div id="outline-container-headline-2" class="outline-3">
+<h3 id="headline-2">
+Round 1: GitHub Actions (<a href="https://github.com/Bootstrapping-Microservices-in-Go/chapter-08/tree/main/example-1">source</a>)
+</h3>
+<div id="outline-text-headline-2" class="outline-text-3">
+<p>Every <code class="verbatim">Action</code> is a YAML file in <code class="verbatim">.github/workflows</code> defined by three main sections:</p>
+<ol>
+<li>A <code class="verbatim">name:</code> field.</li>
+<li>An <code class="verbatim">on:</code> block defining triggers that start the job.</li>
+<li>A <code class="verbatim">jobs:</code> block specifying which jobs to run.</li>
+</ol>
+<p>The <code class="verbatim">name:</code> field below gives the workflow the name of <code class="verbatim">Hello World</code>.  The <code class="verbatim">on:</code> block tells us that the jobs defined will <em>only</em> be run when we push to the main branch or we trigger it from the <code class="verbatim">Actions</code> tab on <code class="verbatim">GitHub</code>.  And the <code class="verbatim">jobs:</code> block allows us to name each job, specify the OS it runs on, and define the steps needed to run each job.</p>
+<p>
+Let&#39;s take a look:</p>
+<div class="src src-yaml">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">name</span>: <span style="color:#ae81ff">Hello World</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">on</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Triggers this workflow on push to the main branch of this code repository.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">push</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">branches</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Allows deployment to be invoked manually through the GitHub Actions user interface.</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">workflow_dispatch</span>:
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># A workflow run is made up of one or more jobs that can run sequentially or in parallel</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">jobs</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># This workflow contains a single job called &#34;hello-world&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">hello-world</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># The type of runner that the job will run on</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">runs-on</span>: <span style="color:#ae81ff">ubuntu-latest</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Steps represent a sequence of tasks that will be executed as part of the job</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Checks out your repository under $GITHUB_WORKSPACE, so your job can access it</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">actions/checkout@v3</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Runs our our &#34;Hello world&#34; shell script.</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Runs the &#34;Hello World&#34; shell script</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">./index.sh</span></span></span></code></pre></div>
+</div>
+<p>
+The <code class="verbatim">workflow</code> above is triggered on every push to the <code class="verbatim">main</code> branch.  It runs the <code class="verbatim">hello-world</code> job, which checks out the repo and executes the following <code class="verbatim">./index.sh</code> shell script:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>echo Hello World</span></span></code></pre></div>
+</div>
+<p>
+Yes, it&#39;s very boring.  But boring is what we need when beginning to learn.</p>
+<p>
+It&#39;s worth remembering that the whole purpose of this series is to avoid pushing code to GitHub code while iterating on new project ideas, so do we really need a remote repo to run these <code class="verbatim">workflows</code>?</p>
+<p>
+Tankfully, no.</p>
+<p>
+<a href="https://github.com/nektos/act">act</a> is a command line tool that runs the <code class="verbatim">workflows</code> locally to simplify your life.  <code class="verbatim">act</code> can be very verbose, so I recommend using it only if <code class="verbatim">act -q</code> tells you your test fails.</p>
+<p>
+Here is what success looks like:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>INFO<span style="color:#f92672">[</span>0000<span style="color:#f92672">]</span> Using docker host <span style="color:#e6db74">&#39;unix:///var/run/docker.sock&#39;</span>, and daemon socket <span style="color:#e6db74">&#39;unix:///var/run/docker.sock&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span> 🚀  Start image<span style="color:#f92672">=</span>catthehacker/ubuntu:act-latest
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   🐳  docker pull image<span style="color:#f92672">=</span>catthehacker/ubuntu:act-latest platform<span style="color:#f92672">=</span> username<span style="color:#f92672">=</span> forcePull<span style="color:#f92672">=</span>true
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   🐳  docker create image<span style="color:#f92672">=</span>catthehacker/ubuntu:act-latest platform<span style="color:#f92672">=</span> entrypoint<span style="color:#f92672">=[</span><span style="color:#e6db74">&#34;tail&#34;</span> <span style="color:#e6db74">&#34;-f&#34;</span> <span style="color:#e6db74">&#34;/dev/null&#34;</span><span style="color:#f92672">]</span> cmd<span style="color:#f92672">=[]</span> network<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;host&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   🐳  docker run image<span style="color:#f92672">=</span>catthehacker/ubuntu:act-latest platform<span style="color:#f92672">=</span> entrypoint<span style="color:#f92672">=[</span><span style="color:#e6db74">&#34;tail&#34;</span> <span style="color:#e6db74">&#34;-f&#34;</span> <span style="color:#e6db74">&#34;/dev/null&#34;</span><span style="color:#f92672">]</span> cmd<span style="color:#f92672">=[]</span> network<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;host&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   🐳  docker exec cmd<span style="color:#f92672">=[</span>node --no-warnings -e console.log<span style="color:#f92672">(</span>process.execPath<span style="color:#f92672">)]</span> user<span style="color:#f92672">=</span> workdir<span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span> ⭐ Run Main actions/checkout@v3
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   🐳  docker cp src<span style="color:#f92672">=</span>/home/steven/github/bootstrapping-microservices-in-go/chapter-08/example-1/. dst<span style="color:#f92672">=</span>/home/steven/github/bootstrapping-microservices-in-go/chapter-08/example-1
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   ✅  Success - Main actions/checkout@v3
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span> ⭐ Run Main Runs the <span style="color:#e6db74">&#34;Hello world&#34;</span> shell script
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   🐳  docker exec cmd<span style="color:#f92672">=[</span>bash -e /var/run/act/workflow/1<span style="color:#f92672">]</span> user<span style="color:#f92672">=</span> workdir<span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span>| Hello world!
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   ✅  Success - Main Runs the <span style="color:#e6db74">&#34;Hello world&#34;</span> shell script
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span> Cleaning up container <span style="color:#66d9ef">for</span> job hello-world
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span> 🏁  Job succeeded</span></span></code></pre></div>
+</div>
+<p>
+…and here is what failure looks like with <code class="verbatim">act -q</code>:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>INFO<span style="color:#f92672">[</span>0000<span style="color:#f92672">]</span> Using docker host <span style="color:#e6db74">&#39;unix:///var/run/docker.sock&#39;</span>, and daemon socket <span style="color:#e6db74">&#39;unix:///var/run/docker.sock&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span> 🚀  Start image<span style="color:#f92672">=</span>catthehacker/ubuntu:act-latest
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   🐳  docker pull image<span style="color:#f92672">=</span>catthehacker/ubuntu:act-latest platform<span style="color:#f92672">=</span> username<span style="color:#f92672">=</span> forcePull<span style="color:#f92672">=</span>true
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   🐳  docker create image<span style="color:#f92672">=</span>catthehacker/ubuntu:act-latest platform<span style="color:#f92672">=</span> entrypoint<span style="color:#f92672">=[</span><span style="color:#e6db74">&#34;tail&#34;</span> <span style="color:#e6db74">&#34;-f&#34;</span> <span style="color:#e6db74">&#34;/dev/null&#34;</span><span style="color:#f92672">]</span> cmd<span style="color:#f92672">=[]</span> network<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;host&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   🐳  docker run image<span style="color:#f92672">=</span>catthehacker/ubuntu:act-latest platform<span style="color:#f92672">=</span> entrypoint<span style="color:#f92672">=[</span><span style="color:#e6db74">&#34;tail&#34;</span> <span style="color:#e6db74">&#34;-f&#34;</span> <span style="color:#e6db74">&#34;/dev/null&#34;</span><span style="color:#f92672">]</span> cmd<span style="color:#f92672">=[]</span> network<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;host&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   🐳  docker exec cmd<span style="color:#f92672">=[</span>node --no-warnings -e console.log<span style="color:#f92672">(</span>process.execPath<span style="color:#f92672">)]</span> user<span style="color:#f92672">=</span> workdir<span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span> ⭐ Run Main actions/checkout@v3
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   🐳  docker cp src<span style="color:#f92672">=</span>/home/steven/github/bootstrapping-microservices-in-go/chapter-08/example-1/. dst<span style="color:#f92672">=</span>/home/steven/github/bootstrapping-microservices-in-go/chapter-08/example-1
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   ✅  Success - Main actions/checkout@v3
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span> ⭐ Run Main Runs the <span style="color:#e6db74">&#34;Hello world&#34;</span> shell script
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   🐳  docker exec cmd<span style="color:#f92672">=[</span>bash -e /var/run/act/workflow/1<span style="color:#f92672">]</span> user<span style="color:#f92672">=</span> workdir<span style="color:#f92672">=</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span>   ❌  Failure - Main Runs the <span style="color:#e6db74">&#34;Hello world&#34;</span> shell script
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span> exitcode <span style="color:#e6db74">&#39;1&#39;</span>: failure
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Hello world/hello-world<span style="color:#f92672">]</span> 🏁  Job failed
+</span></span><span style="display:flex;"><span>Error: Job <span style="color:#e6db74">&#39;hello-world&#39;</span> failed</span></span></code></pre></div>
+</div>
+<p>
+Failed jobs mean you have to spend some time debugging your code, which is just another day in the life.</p>
+<p>
+Is your <code class="verbatim">workflow</code> passing?  Great!  Now you can focus on testing with <code class="verbatim">Ginkgo</code> and <code class="verbatim">Gomega</code>.</p>
+</div>
+</div>
+<div id="outline-container-headline-3" class="outline-3">
+<h3 id="headline-3">
+Round 2: Refactoring with GitHub Actions, CI, and Go (<a href="https://github.com/Bootstrapping-Microservices-in-Go/chapter-08/tree/main/example-2">source</a>)
+</h3>
+<div id="outline-text-headline-3" class="outline-text-3">
+<p>Our Go code from earlier weeks has been a bit atrocious.  Not in that it didn&#39;t work, but our <code class="verbatim">func main()</code> block violates the <code class="verbatim">Single Responsibility Principle (SRP)</code>: functions should only have a single reason to change.</p>
+<p>
+Our earlier <code class="verbatim">main()</code> blocks have initialized our environment variables, created an <code class="verbatim">http.ServeMux</code>, added anonymous <code class="verbatim">http.HandlerFuncs</code> to the <code class="verbatim">http.ServeMux</code>, and then started our server with <code class="verbatim">http.ListenAndServe</code>.</p>
+<p>
+Before we refactor the <code class="verbatim">video-streaming</code> microservice, let&#39;s configure the <code class="verbatim">workflow</code> for our <code class="verbatim">GitHub Actions</code>.</p>
+<div id="outline-container-headline-4" class="outline-4">
+<h4 id="headline-4">
+Our GitHub Action
+</h4>
+<div id="outline-text-headline-4" class="outline-text-4">
+<p>Our task is fairly straightforward:</p>
+<ol>
+<li>Checkout the repo.</li>
+<li>Install Go.</li>
+<li>Install Ginkgo for tests. (Discussed next week.)</li>
+<li>Download the Go modules.</li>
+<li>Run the tests.</li>
+</ol>
+<p>In our workflow file, that looks like:</p>
+<div class="src src-yaml">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">name</span>: <span style="color:#ae81ff">CI</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">on</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">push</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">branches</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">jobs</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">CI</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">runs-on</span>: <span style="color:#ae81ff">ubuntu-latest</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Checkout our repo.</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">actions/checkout@v3</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      <span style="color:#75715e"># Add Go</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">actions/setup-go@v5</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">with</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">go-version</span>: <span style="color:#e6db74">&#34;1.23&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Installing Ginkgo CLI</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">go install github.com/onsi/ginkgo/v2/ginkgo</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Installing modules</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">go mod download</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Running Tests</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">ginkgo run ./...</span></span></span></code></pre></div>
+</div>
+</div>
+</div>
+<div id="outline-container-headline-5" class="outline-4">
+<h4 id="headline-5">
+Now the Refactoring
+</h4>
+<div id="outline-text-headline-5" class="outline-text-4">
+<p>Our cluttered code from <code class="verbatim">chapter-03</code>:</p>
+<div class="src src-go">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;io&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;log&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;net/http&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;os&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;strconv&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">contentLength</span> = <span style="color:#e6db74">&#34;Content-Length&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">contentType</span>   = <span style="color:#e6db74">&#34;Content-Type&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">port</span>, <span style="color:#a6e22e">found</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">LookupEnv</span>(<span style="color:#e6db74">`PORT`</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> !<span style="color:#a6e22e">found</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#e6db74">`Please specify the port number for the HTTP server with the environment variable PORT.`</span>)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mux</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">NewServeMux</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">HandleFunc</span>(<span style="color:#e6db74">&#34;GET /video&#34;</span>, <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">w</span> <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ResponseWriter</span>, <span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">videoPath</span> <span style="color:#f92672">:=</span> <span style="color:#e6db74">&#34;./videos/SampleVideo_1280x720_1mb.mp4&#34;</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">videoReader</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Open</span>(<span style="color:#a6e22e">videoPath</span>)
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Print</span>(<span style="color:#e6db74">&#34;Not Found&#34;</span>)
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">WriteHeader</span>(<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">StatusNotFound</span>)
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">videoReader</span>.<span style="color:#a6e22e">Close</span>()
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">videoStats</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">videoReader</span>.<span style="color:#a6e22e">Stat</span>()
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">WriteHeader</span>(<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">StatusInternalServerError</span>)
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">Header</span>().<span style="color:#a6e22e">Add</span>(<span style="color:#a6e22e">contentLength</span>, <span style="color:#a6e22e">strconv</span>.<span style="color:#a6e22e">FormatInt</span>(<span style="color:#a6e22e">videoStats</span>.<span style="color:#a6e22e">Size</span>(), <span style="color:#ae81ff">10</span>))
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">Header</span>().<span style="color:#a6e22e">Add</span>(<span style="color:#a6e22e">contentType</span>, <span style="color:#e6db74">&#34;video/mp4&#34;</span>)
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// use io.Copy for streaming.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">Copy</span>(<span style="color:#a6e22e">w</span>, <span style="color:#a6e22e">videoReader</span>)
+</span></span><span style="display:flex;"><span>	})
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ListenAndServe</span>(<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Sprint</span>(<span style="color:#e6db74">&#34;:&#34;</span>, <span style="color:#a6e22e">port</span>), <span style="color:#a6e22e">mux</span>)
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
+</div>
+<p>
+This code would look a lot cleaner if it were simpler, so let&#39;s create a function to build the <code class="verbatim">http.ServeMux</code> and add the <code class="verbatim">http.HandlerFuncs</code>.  Let&#39;s also place that function in its own package while we&#39;re at it:</p>
+<div class="src src-go">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#a6e22e">handlers</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;io&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;net/http&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;os&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;strconv&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">contentLength</span> = <span style="color:#e6db74">&#34;Content-Length&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">contentType</span>   = <span style="color:#e6db74">&#34;Content-Type&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">BuildMux</span>() <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ServeMux</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mux</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">NewServeMux</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">HandleFunc</span>(<span style="color:#e6db74">&#34;GET /video&#34;</span>, <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">w</span> <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ResponseWriter</span>, <span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">videoPath</span> <span style="color:#f92672">:=</span> <span style="color:#e6db74">&#34;./videos/SampleVideo_1280x720_1mb.mp4&#34;</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">videoReader</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Open</span>(<span style="color:#a6e22e">videoPath</span>)
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">WriteHeader</span>(<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">StatusNotFound</span>)
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">videoReader</span>.<span style="color:#a6e22e">Close</span>()
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">videoStats</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">videoReader</span>.<span style="color:#a6e22e">Stat</span>()
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>			<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">WriteHeader</span>(<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">StatusInternalServerError</span>)
+</span></span><span style="display:flex;"><span>			<span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>		}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">Header</span>().<span style="color:#a6e22e">Add</span>(<span style="color:#a6e22e">contentLength</span>, <span style="color:#a6e22e">strconv</span>.<span style="color:#a6e22e">FormatInt</span>(<span style="color:#a6e22e">videoStats</span>.<span style="color:#a6e22e">Size</span>(), <span style="color:#ae81ff">10</span>))
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">Header</span>().<span style="color:#a6e22e">Add</span>(<span style="color:#a6e22e">contentType</span>, <span style="color:#e6db74">&#34;video/mp4&#34;</span>)
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// use io.Copy for streaming.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">Copy</span>(<span style="color:#a6e22e">w</span>, <span style="color:#a6e22e">videoReader</span>)
+</span></span><span style="display:flex;"><span>	})
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">HandleFunc</span>(<span style="color:#e6db74">`GET /live`</span>, <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">w</span> <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ResponseWriter</span>, <span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>) {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">WriteHeader</span>(<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">StatusOK</span>)
+</span></span><span style="display:flex;"><span>	})
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">mux</span>
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
+</div>
+<p>
+That nicely encapsulates the <code class="verbatim">http.ServeMux</code>.  It uses anonymous functions for the <code class="verbatim">http.HandlerFuncs</code> and therefore doesn&#39;t follow the <code class="verbatim">SRP</code>, so let&#39;s try a second refactoring:</p>
+<div class="src src-go">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#a6e22e">handlers</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;io&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;net/http&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;os&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;strconv&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">contentLength</span> = <span style="color:#e6db74">&#34;Content-Length&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">contentType</span>   = <span style="color:#e6db74">&#34;Content-Type&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">BuildServeMux</span>() <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ServeMux</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mux</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">NewServeMux</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">HandleFunc</span>(<span style="color:#e6db74">&#34;GET /video&#34;</span>, <span style="color:#a6e22e">getVideoHandler</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">HandleFunc</span>(<span style="color:#e6db74">`GET /live`</span>, <span style="color:#a6e22e">livenessHandler</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">mux</span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// getVideoHandler streams a video to the browser.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">getVideoHandler</span>(<span style="color:#a6e22e">w</span> <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ResponseWriter</span>, <span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">videoPath</span> <span style="color:#f92672">:=</span> <span style="color:#e6db74">&#34;./videos/SampleVideo_1280x720_1mb.mp4&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">videoReader</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">Open</span>(<span style="color:#a6e22e">videoPath</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">WriteHeader</span>(<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">StatusNotFound</span>)
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">defer</span> <span style="color:#a6e22e">videoReader</span>.<span style="color:#a6e22e">Close</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">videoStats</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">videoReader</span>.<span style="color:#a6e22e">Stat</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">WriteHeader</span>(<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">StatusInternalServerError</span>)
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">Header</span>().<span style="color:#a6e22e">Add</span>(<span style="color:#a6e22e">contentLength</span>, <span style="color:#a6e22e">strconv</span>.<span style="color:#a6e22e">FormatInt</span>(<span style="color:#a6e22e">videoStats</span>.<span style="color:#a6e22e">Size</span>(), <span style="color:#ae81ff">10</span>))
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">Header</span>().<span style="color:#a6e22e">Add</span>(<span style="color:#a6e22e">contentType</span>, <span style="color:#e6db74">&#34;video/mp4&#34;</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// use io.Copy for streaming.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">Copy</span>(<span style="color:#a6e22e">w</span>, <span style="color:#a6e22e">videoReader</span>)
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// livenessHandler returns http.StatusOK to verify the server is live.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">livenessHandler</span>(<span style="color:#a6e22e">w</span> <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ResponseWriter</span>, <span style="color:#a6e22e">r</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">Request</span>) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">w</span>.<span style="color:#a6e22e">WriteHeader</span>(<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">StatusOK</span>)
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
+</div>
+<p>
+<code class="verbatim">BuildServeMux</code> is now much more expressive and easier to read.</p>
+<p>
+But what about our new <code class="verbatim">main.go</code>?  Let&#39;s have a look:</p>
+<div class="src src-go">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#a6e22e">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;log&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;net/http&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;os&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;github.com/bootstrapping-microservices-in-go/chapter-08/example-2/handlers&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">main</span>() {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">port</span>, <span style="color:#a6e22e">found</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">os</span>.<span style="color:#a6e22e">LookupEnv</span>(<span style="color:#e6db74">`PORT`</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> !<span style="color:#a6e22e">found</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">log</span>.<span style="color:#a6e22e">Fatal</span>(<span style="color:#e6db74">`Please specify the port number for the HTTP server with the environment variable PORT.`</span>)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mux</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">handlers</span>.<span style="color:#a6e22e">BuildServeMux</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">ListenAndServe</span>(<span style="color:#a6e22e">fmt</span>.<span style="color:#a6e22e">Sprint</span>(<span style="color:#e6db74">&#34;:&#34;</span>, <span style="color:#a6e22e">port</span>), <span style="color:#a6e22e">mux</span>)
+</span></span><span style="display:flex;"><span>}</span></span></code></pre></div>
+</div>
+<p>
+Less than 10 lines of code?  That&#39;s fantastic!</p>
+</div>
+</div>
+<div id="outline-container-headline-6" class="outline-4">
+<h4 id="headline-6">
+What about CI?
+</h4>
+<div id="outline-text-headline-6" class="outline-text-4">
+<p>Writing the actual Continuous Integration test code is the focus of Chapter 9 of <a href="https://bootstrapping-microservices.com/">Bootstrapping Microservices</a> (due next week), but we can briefly touch on the topic here.</p>
+<p>
+The book&#39;s testing framework of choice is <a href="https://jestjs.io/docs/getting-started">Jest</a>.  The closest Go equivalent is <a href="https://github.com/onsi/ginkgo">Ginkgo</a> combined with the <a href="https://github.com/onsi/gomega">Gomega</a> matchers package.</p>
+<p>
+Our test code for the <code class="verbatim">handlers</code> package looks like:</p>
+<div class="src src-go">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#f92672">package</span> <span style="color:#a6e22e">handlers_test</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> (
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;net/http&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;net/http/httptest&#34;</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;testing&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>	<span style="color:#e6db74">&#34;github.com/bootstrapping-microservices-in-go/chapter-08/example-2/handlers&#34;</span>
+</span></span><span style="display:flex;"><span>	. <span style="color:#e6db74">&#34;github.com/onsi/ginkgo/v2&#34;</span>
+</span></span><span style="display:flex;"><span>	. <span style="color:#e6db74">&#34;github.com/onsi/gomega&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">TestMux</span>(<span style="color:#a6e22e">t</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">testing</span>.<span style="color:#a6e22e">T</span>) {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">RegisterFailHandler</span>(<span style="color:#a6e22e">Fail</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">RunSpecs</span>(<span style="color:#a6e22e">t</span>, <span style="color:#e6db74">&#34;Mux Suite&#34;</span>)
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">_</span> = <span style="color:#a6e22e">Describe</span>(<span style="color:#e6db74">&#34;VideoStreamingHandlers&#34;</span>, <span style="color:#66d9ef">func</span>() {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">mux</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">handlers</span>.<span style="color:#a6e22e">BuildServeMux</span>()
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">It</span>(<span style="color:#e6db74">&#34;testing /live endpoint&#34;</span>, <span style="color:#66d9ef">func</span>() {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">NewRequest</span>(<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">MethodGet</span>, <span style="color:#e6db74">`/live`</span>, <span style="color:#66d9ef">nil</span>)
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">Expect</span>(<span style="color:#a6e22e">err</span>).<span style="color:#a6e22e">To</span>(<span style="color:#a6e22e">BeNil</span>())
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">rr</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">httptest</span>.<span style="color:#a6e22e">NewRecorder</span>()
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">mux</span>.<span style="color:#a6e22e">ServeHTTP</span>(<span style="color:#a6e22e">rr</span>, <span style="color:#a6e22e">req</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">Expect</span>(<span style="color:#a6e22e">rr</span>.<span style="color:#a6e22e">Code</span>).<span style="color:#a6e22e">To</span>(<span style="color:#a6e22e">Expect</span>(<span style="color:#a6e22e">http</span>.<span style="color:#a6e22e">StatusOK</span>))
+</span></span><span style="display:flex;"><span>	})
+</span></span><span style="display:flex;"><span>})</span></span></code></pre></div>
+</div>
+<p>
+Next week will be test-centric, so we won&#39;t dive any deeper into this for now.</p>
+</div>
+</div>
+<div id="outline-container-headline-7" class="outline-4">
+<h4 id="headline-7">
+Note on Git Hooks
+</h4>
+<div id="outline-text-headline-7" class="outline-text-4">
+<p>Try the <code class="verbatim">pre-commit</code> hook now.  Break the tests by expecting another status code and try to compile.  The inability to commit the failing code may make a believer out of you.</p>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-headline-8" class="outline-3">
+<h3 id="headline-8">
+Round 3: Deploying to Kubernetes with GitHub Actions (<a href="https://github.com/Bootstrapping-Microservices-in-Go/chapter-08/tree/main/example-3">source</a>)
+</h3>
+<div id="outline-text-headline-8" class="outline-text-3">
+<p>Now we&#39;re almost complete.  We will modify our GitHub Action from Round 2 to both test AND deploy our image to Kubernetes.</p>
+<p>
+The book uses the <code class="verbatim">envsubst</code> command for templating, but we&#39;re just going to focus on <code class="verbatim">CI/CD</code> in this section for now.  We will also add a <code class="verbatim">pre-push</code> hook to ensure our deployments to Kubernetes lack errors before being submitted to GitHub,</p>
+<p>
+The only code change this week is to add a new job to our <code class="verbatim">GitHub Action</code> to deploy our microservice to Kubernetes.  (Yes, we could use <code class="verbatim">Terraform</code> again, but we&#39;re following the book&#39;s structure since the <code class="verbatim">Terraform</code> chapter is optional.)</p>
+<p>
+The main pain with testing <code class="verbatim">CD</code> is that <code class="verbatim">minikube</code> doesn&#39;t (currently) run under <code class="verbatim">act</code>, so we will use <code class="verbatim">Kind</code> as our Kubernetes platform instead in the <code class="verbatim">CD</code> section.  <code class="verbatim">Kind</code> has some issues, namely that it does not support <code class="verbatim">Services</code>, but we can use <code class="verbatim">NodePort</code> for now.</p>
+<p>
+All that said, here is the new <code class="verbatim">GitHub Action</code> workflow:</p>
+<div class="src src-yaml">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">name</span>: <span style="color:#ae81ff">CI</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">on</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">push</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">branches</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">main</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">jobs</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">CI</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">runs-on</span>: <span style="color:#ae81ff">ubuntu-latest</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">actions/checkout@v3</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">actions/setup-go@v5</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">with</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">go-version</span>: <span style="color:#e6db74">&#34;1.23&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Installing Ginkgo CLI and modules</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">go install github.com/onsi/ginkgo/v2/ginkgo</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Installing modules</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">go mod download</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Running Tests</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">ginkgo run ./...</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">CD</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">runs-on</span>: <span style="color:#ae81ff">ubuntu-latest</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">env</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">CONTAINER_REGISTRY</span>: <span style="color:#e6db74">&#34;localhost:5000&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">VERSION</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">steps</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">actions/checkout@v3</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">uses</span>: <span style="color:#ae81ff">actions/setup-go@v5</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">with</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">go-version</span>: <span style="color:#e6db74">&#34;1.23&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Install kind</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">go install sigs.k8s.io/kind@latest</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Start kind</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">kind create cluster</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Build image</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">./scripts/build-image.sh</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Push image</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">./scripts/push-image.sh</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Deploy image</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">run</span>: <span style="color:#ae81ff">./scripts/deploy.sh</span></span></span></code></pre></div>
+</div>
+<p>
+Next we will take a look at the <code class="verbatim">build-image.sh</code> script:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>set -u
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>docker build -t $CONTAINER_REGISTRY/video-streaming:$VERSION .</span></span></code></pre></div>
+</div>
+<p>
+The <code class="verbatim">set -u</code> command prevents the script from running unless all variables are set; <code class="verbatim">$CONTAINER_REGSTRY</code> and <code class="verbatim">$VERSION</code> in this case.</p>
+<p>
+Next we will load our Docker image into the <code class="verbatim">Kind</code> environment:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>set -u
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>kind load docker-image $CONTAINER_REGISTRY/video-streaming:$VERSION</span></span></code></pre></div>
+</div>
+<p>
+And finally, we need to download <code class="verbatim">kubectl</code>, create our <code class="verbatim">Deployment</code>, and wait for it to be available:</p>
+<div class="src src-sh">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>set -u
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>curl -LO <span style="color:#e6db74">&#34;https://dl.k8s.io/release/</span><span style="color:#66d9ef">$(</span>curl -L -s https://dl.k8s.io/release/stable.txt<span style="color:#66d9ef">)</span><span style="color:#e6db74">/bin/linux/amd64/kubectl&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>install -o root -g root -m <span style="color:#ae81ff">0755</span> kubectl /usr/local/bin/kubectl
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>kubectl apply -f ./scripts/kubernetes/deploy.yml
+</span></span><span style="display:flex;"><span>kubectl wait --for<span style="color:#f92672">=</span>condition<span style="color:#f92672">=</span>ready pod -l app<span style="color:#f92672">=</span>video-streaming</span></span></code></pre></div>
+</div>
+<p>
+Test <code class="verbatim">act</code> in the <code class="verbatim">example-3</code> directory.</p>
+</div>
+</div>
+<div id="outline-container-headline-9" class="outline-3">
+<h3 id="headline-9">
+Conclusion
+</h3>
+<div id="outline-text-headline-9" class="outline-text-3">
+<p>Success!  Congrats!</p>
+<p>
+For now, anyway.  I will focus more on <code class="verbatim">CI/CD</code> with <code class="verbatim">act</code> in a future article.  The ideal goal is to run <code class="verbatim">minikube</code> inside <code class="verbatim">act</code> omce I submit a few PRs and they are accepted.</p>
+<p>
+In closing, thank you for your your patience for this article week!  PRs for open source sometiems take forever, unfortunately.</p>
+<p>
+The next article includes front-end tests with <code class="verbatim">Jest</code>, so it may take two weeks.  Should I use <code class="verbatim">Angular</code> instead of <code class="verbatim">React</code>?</p>
+<p>
+Let me know your thoughts!</p>
+</div>
+</div>
+]]></content:encoded>
+    </item>
+  </channel>
+</rss>

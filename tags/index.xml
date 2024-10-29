@@ -7,20 +7,52 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>© Steven Edwards</copyright>
-    <lastBuildDate>Mon, 14 Oct 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 29 Oct 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://example.org/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Cd</title>
+      <link>https://example.org/tags/cd/</link>
+      <pubDate>Tue, 29 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://example.org/tags/cd/</guid>
+      <description></description>
+      <content:encoded><![CDATA[]]></content:encoded>
+    </item>
+    <item>
+      <title>Ci</title>
+      <link>https://example.org/tags/ci/</link>
+      <pubDate>Tue, 29 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://example.org/tags/ci/</guid>
+      <description></description>
+      <content:encoded><![CDATA[]]></content:encoded>
+    </item>
     <item>
       <title>Docker</title>
       <link>https://example.org/tags/docker/</link>
-      <pubDate>Mon, 14 Oct 2024 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 29 Oct 2024 00:00:00 +0000</pubDate>
       <guid>https://example.org/tags/docker/</guid>
+      <description></description>
+      <content:encoded><![CDATA[]]></content:encoded>
+    </item>
+    <item>
+      <title>Git</title>
+      <link>https://example.org/tags/git/</link>
+      <pubDate>Tue, 29 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://example.org/tags/git/</guid>
+      <description></description>
+      <content:encoded><![CDATA[]]></content:encoded>
+    </item>
+    <item>
+      <title>Github</title>
+      <link>https://example.org/tags/github/</link>
+      <pubDate>Tue, 29 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://example.org/tags/github/</guid>
       <description></description>
       <content:encoded><![CDATA[]]></content:encoded>
     </item>
     <item>
       <title>Microservices</title>
       <link>https://example.org/tags/microservices/</link>
-      <pubDate>Mon, 14 Oct 2024 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 29 Oct 2024 00:00:00 +0000</pubDate>
       <guid>https://example.org/tags/microservices/</guid>
       <description></description>
       <content:encoded><![CDATA[]]></content:encoded>
