@@ -64,7 +64,7 @@ Round 0: git hooks (optional) If you have been coding for a bit, you will have p
 git hooks are a partial solution to this problem. (Only partial because it doesn&#39;t work if you don&#39;t define any tests.)">
   <meta itemprop="datePublished" content="2024-10-29T00:00:00+00:00">
   <meta itemprop="dateModified" content="2024-10-29T00:00:00+00:00">
-  <meta itemprop="wordCount" content="2308">
+  <meta itemprop="wordCount" content="2306">
   <meta itemprop="keywords" content="Microservices,Docker,Git,Github,Ci,Cd">
 
 <meta name="referrer" content="no-referrer-when-downgrade" />
@@ -143,7 +143,7 @@ You could also choose to place the same test code in <code class="verbatim">.git
 <p>
 Or you could use <code class="verbatim">act</code>, described in the following section, to perform tests before pushing your code to your repo.</p>
 <p>
-You could even continue as is with no automated tests prior to commits or pushes and let your centalized test runner on <code class="verbatim">GitHub</code> run them for you with Continuous Integration tests using <code class="verbatim">GitHub Actions</code>.</p>
+You could even continue as is with no automated tests prior to commits or pushes and let your centralized test runner on <code class="verbatim">GitHub</code> run them for you with Continuous Integration tests using <code class="verbatim">GitHub Actions</code>.</p>
 <p>
 A final note before getting there, however:</p>
 <p>
@@ -204,7 +204,7 @@ Yes, it&#39;s very boring.  But boring is what we need when beginning to learn.<
 <p>
 It&#39;s worth remembering that the whole purpose of this series is to avoid pushing code to GitHub code while iterating on new project ideas, so do we really need a remote repo to run these <code class="verbatim">workflows</code>?</p>
 <p>
-Tankfully, no.</p>
+Thankfully, no.</p>
 <p>
 <a href="https://github.com/nektos/act">act</a> is a command line tool that runs the <code class="verbatim">workflows</code> locally to simplify your life.  <code class="verbatim">act</code> can be very verbose, so I recommend using it only if <code class="verbatim">act -q</code> tells you your test fails.</p>
 <p>
@@ -270,7 +270,7 @@ Our GitHub Action
 <ol>
 <li>Checkout the repo.</li>
 <li>Install Go.</li>
-<li>Install Ginkgo for tests. (Discussed next week.)</li>
+<li>Install Ginkgo for tests. (Discussed next post.)</li>
 <li>Download the Go modules.</li>
 <li>Run the tests.</li>
 </ol>
@@ -494,7 +494,7 @@ Less than 10 lines of code?  That&#39;s fantastic!</p>
 What about CI?
 </h4>
 <div id="outline-text-headline-6" class="outline-text-4">
-<p>Writing the actual Continuous Integration test code is the focus of Chapter 9 of <a href="https://bootstrapping-microservices.com/">Bootstrapping Microservices</a> (due next week), but we can briefly touch on the topic here.</p>
+<p>Writing the actual Continuous Integration test code is the focus of Chapter 9 of <a href="https://bootstrapping-microservices.com/">Bootstrapping Microservices</a> (due next post), but we can briefly touch on the topic here.</p>
 <p>
 The book&#39;s testing framework of choice is <a href="https://jestjs.io/docs/getting-started">Jest</a>.  The closest Go equivalent is <a href="https://github.com/onsi/ginkgo">Ginkgo</a> combined with the <a href="https://github.com/onsi/gomega">Gomega</a> matchers package.</p>
 <p>
@@ -653,9 +653,9 @@ Conclusion
 <p>
 For now, anyway.  I will focus more on <code class="verbatim">CI/CD</code> with <code class="verbatim">act</code> in a future article.  The ideal goal is to run <code class="verbatim">minikube</code> inside <code class="verbatim">act</code> omce I submit a few PRs and they are accepted.</p>
 <p>
-In closing, thank you for your your patience for this article week!  PRs for open source sometiems take forever, unfortunately.</p>
+In closing, thank you for your your patience for this week&#39;s article!  PRs for open source sometiems take forever, unfortunately.</p>
 <p>
-The next article includes front-end tests with <code class="verbatim">Jest</code>, mocks, and end-to-end testing with <code class="verbatim">Playwright</code>, so it may take two weeks.  Should I use <code class="verbatim">Angular</code> instead of <code class="verbatim">React</code>?</p>
+The next article includes front-end tests, mocks, and end-to-end testing with <code class="verbatim">Playwright</code>, so it may take two weeks.  Should I use <code class="verbatim">Angular</code> instead of <code class="verbatim">React</code>?</p>
 <p>
 Let me know your thoughts!</p>
 <p>
